@@ -12,12 +12,12 @@ Este documento lista as bibliotecas escolhidas para o projeto, o motivo da escol
 ## Requisições HTTP e cache
 
 ### axios
-Cliente HTTP usado para todas as chamadas à API. Configuração centralizada (instância, interceptors de erro/token) fica em `lib/`, o uso efetivo para comunicação externa fica em `infrastructure/`.
+Cliente HTTP usado para todas as chamadas à API. Configuração centralizada (instância, interceptors de erro/token) fica em `src/lib/`, o uso efetivo para comunicação externa fica em `src/infrastructure/`.
 
 ### react-query (TanStack Query)
 Gerencia cache, loading, revalidação e sincronização de dados assíncronos vindos da API. Evita a necessidade de estado global manual para dados de servidor (ex: Redux) — resolve cache, refetch automático, invalidação e deduplicação de requisições.
 
-**Onde usar:** hooks de features (`features/*/hooks`) ou `shared/hooks`, encapsulando chamadas do `axios`/`infrastructure`.
+**Onde usar:** hooks de features (`src/features/*/hooks`) ou `src/shared/hooks`, encapsulando chamadas do `axios`/`src/infrastructure`.
 
 ## Validação
 
@@ -27,28 +27,28 @@ Biblioteca de validação e definição de schemas com inferência de tipos Type
 - Validar formulários (junto com `react-hook-form`)
 - Validar variáveis de ambiente
 
-**Onde usar:** `shared/schemas/`.
+**Onde usar:** `src/shared/schemas/`.
 
 ## Formulários
 
 ### react-hook-form
 Gerenciamento de formulários com alta performance (evita re-render em cada tecla) e baixo boilerplate. Integrado ao Zod via `@hookform/resolvers/zod`, reaproveitando os mesmos schemas de validação.
 
-**Onde usar:** dentro de cada feature (`features/*/components`), com schemas vindos de `shared/schemas`.
+**Onde usar:** dentro de cada feature (`src/features/*/components`), com schemas vindos de `src/shared/schemas`.
 
 ## Datas
 
 ### date-fns
 Manipulação e formatação de datas de forma modular (importa só as funções usadas, ao invés de uma lib monolítica como moment.js).
 
-**Onde usar:** `shared/utils/` para helpers de formatação reutilizados entre features.
+**Onde usar:** `src/shared/utils/` para helpers de formatação reutilizados entre features.
 
 ## Ícones
 
 ### lucide-icons (lucide-react)
 Biblioteca de ícones SVG, leve e com boa cobertura. Padrão usado também pelo shadcn/ui, caso essa lib de componentes seja adotada futuramente.
 
-**Onde usar:** diretamente em `components/` e nos componentes de `features/`.
+**Onde usar:** diretamente em `src/shared/components/` e nos componentes de `src/features/`.
 
 ## Testes
 
@@ -80,9 +80,9 @@ Playwright (e2e)             → MSW (browser) → simula resposta da API
 
 | Camada | Libs relacionadas |
 |---|---|
-| `infrastructure/` | axios, react-query (chamadas reais à API) |
+| `src/infrastructure/` | axios, react-query (chamadas reais à API) |
 | `lib/` | configuração do axios (instância), configuração do QueryClient |
-| `shared/schemas/` | zod |
-| `shared/utils/` | date-fns |
+| `src/shared/schemas/` | zod |
+| `src/shared/utils/` | date-fns |
 | `features/*/components` | react-hook-form, lucide-react |
 | `tests/` | vitest, playwright, msw |
