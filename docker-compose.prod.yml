@@ -1,0 +1,20 @@
+# Produção (simulada localmente):  docker compose -f docker-compose.prod.yml up -d --build
+# Pré-requisito: backend no ar (cria a rede "intercurso" e o serviço "api").
+services:
+  web:
+    build:
+      context: .
+      target: prod
+      args:
+        NEXT_API_URL: http://api:8000
+    container_name: web-intercurso
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    networks:
+      - intercurso
+
+networks:
+  intercurso:
+    name: intercurso
+    external: true
