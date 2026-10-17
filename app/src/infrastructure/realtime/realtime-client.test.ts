@@ -25,7 +25,7 @@ class FakeEventSource {
   static instances: FakeEventSource[] = [];
 
   onopen: (() => void) | null = null;
-  onerror: (() => void) | null = null;
+  onerror: ((event?: Event) => void) | null = null;
   onmessage: ((event: Event) => void) | null = null;
   listeners = new Map<string, (event: Event) => void>();
   close = vi.fn();
@@ -44,6 +44,10 @@ class FakeEventSource {
 
   fail() {
     this.onerror?.();
+  }
+
+  serverError(data: string) {
+    this.onerror?.(new MessageEvent("error", { data }));
   }
 
   message(data: string, type = "message") {
@@ -65,7 +69,7 @@ const adapter: AxiosAdapter = async (config) => {
   if (typeof reply === "function") return reply(config);
   if (reply instanceof Error) throw reply;
 
-  const { status = 200, headers = {}, body = { ticket: "abc" } } = reply;
+  const { status = 200, headers = {}, body = { data: { ticket: "abc" } } } = reply;
   const response: AxiosResponse = { data: body, status, statusText: "", headers, config };
   if (status < 300) return response;
   throw new AxiosError(`status ${status}`, AxiosError.ERR_BAD_RESPONSE, config, undefined, response);
@@ -89,7 +93,7 @@ describe("createRealtimeClient", () => {
       onReconnect: vi.fn(),
     };
     const connect = createRealtimeClient(http);
-    const disconnect = connect({ path: "/api/match/1/live", schema, ...callbacks, ...overrides });
+    const disconnect = connect({ channel: { type: "match", id: "1" }, schema, ...callbacks, ...overrides });
     return { ...callbacks, disconnect };
   }
 
@@ -122,6 +126,7 @@ describe("createRealtimeClient", () => {
       const { onEvent, onStatus } = await startOpen();
 
       expect(configs[0]).toMatchObject({ method: "post", url: "/api/realtime/ticket", baseURL: BASE });
+      expect(JSON.parse(configs[0].data)).toEqual({ channel_type: "match", channel_id: "1" });
       expect(sources()[0].url).toBe(`${BASE}/api/match/1/live?ticket=abc`);
 
       sources()[0].message('{"score":3}');
@@ -130,7 +135,7 @@ describe("createRealtimeClient", () => {
     });
 
     it("codifica o ticket na query string", async () => {
-      replies.push({ body: { ticket: "a b&c" } });
+      replies.push({ body: { data: { ticket: "a b&c" } } });
       start();
       await flush();
 
@@ -219,11 +224,12 @@ describe("createRealtimeClient", () => {
     });
 
     it.each([
-      ["sem o campo ticket", { other: 1 }],
-      ["com ticket vazio", { ticket: "" }],
-      ["com ticket não textual", { ticket: 42 }],
+      ["sem o campo ticket", { data: { other: 1 } }],
+      ["com ticket vazio", { data: { ticket: "" } }],
+      ["com ticket não textual", { data: { ticket: 42 } }],
       ["com corpo que não é JSON", "not-json"],
       ["sem corpo", null],
+      ["com ticket fora de data", { ticket: "abc" }],
     ])("resposta %s informa ticket_failed", async (_, body) => {
       replies.push({ body });
       const { onError } = start();
@@ -261,6 +267,28 @@ describe("createRealtimeClient", () => {
       await vi.advanceTimersByTimeAsync(1_000);
       expect(configs).toHaveLength(2);
       expect(sources()).toHaveLength(2);
+    });
+
+    it("evento error do servidor informa rate_limited e só tenta de novo após 15s", async () => {
+      const { onError, onStatus } = await startOpen();
+      sources()[0].serverError('{"detail":"Limite de conexões em tempo real atingido (100)."}');
+
+      expect(onError.mock.calls[0][0].code).toBe("rate_limited");
+      expect(onError.mock.calls[0][0].retryAfterMs).toBe(15_000);
+      expect(sources()[0].close).toHaveBeenCalled();
+      expect(onStatus).toHaveBeenLastCalledWith("reconnecting");
+
+      await vi.advanceTimersByTimeAsync(14_999);
+      expect(sources()).toHaveLength(1);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(sources()).toHaveLength(2);
+    });
+
+    it("falha de conexão sem payload não é tratada como rate_limited", async () => {
+      const { onError } = await startOpen();
+      sources()[0].fail();
+
+      expect(onError).not.toHaveBeenCalled();
     });
 
     it("onReconnect dispara só em aberturas posteriores a uma falha", async () => {
@@ -456,6 +484,17 @@ describe("createRealtimeClient", () => {
       expect(sources()[0].close).not.toHaveBeenCalled();
     });
 
+    it("evento heartbeat renova a janela sem chegar ao onEvent", async () => {
+      const { onEvent } = await startOpen({ staleAfterMs: 10_000 });
+
+      await vi.advanceTimersByTimeAsync(6_000);
+      sources()[0].message("{}", "heartbeat");
+      await vi.advanceTimersByTimeAsync(6_000);
+
+      expect(sources()[0].close).not.toHaveBeenCalled();
+      expect(onEvent).not.toHaveBeenCalled();
+    });
+
     it("disconnect cancela o monitoramento", async () => {
       const { disconnect, onStatus } = await startOpen({ staleAfterMs: 10_000 });
       disconnect();
@@ -466,6 +505,34 @@ describe("createRealtimeClient", () => {
   });
 
   describe("connectRealtime", () => {
+    async function freshConnect() {
+      vi.resetModules();
+      const { default: freshAxios } = await import("axios");
+      freshAxios.defaults.adapter = adapter;
+      const session = await import("@/core/auth/session-store");
+      const { connectRealtime } = await import("./realtime-client");
+      return { connectRealtime, session };
+    }
+
+    it("envia o Bearer do access token quando há sessão", async () => {
+      const { connectRealtime, session } = await freshConnect();
+      session.setAccessToken("T1");
+
+      connectRealtime({ channel: { type: "match", id: "1" }, schema, onEvent: vi.fn() });
+      await flush();
+
+      expect(configs[0].headers.get("Authorization")).toBe("Bearer T1");
+    });
+
+    it("sem sessão o ticket sai anônimo, sem Authorization", async () => {
+      const { connectRealtime } = await freshConnect();
+
+      connectRealtime({ channel: { type: "match", id: "1" }, schema, onEvent: vi.fn() });
+      await flush();
+
+      expect(configs[0].headers.has("Authorization")).toBe(false);
+    });
+
     it("usa NEXT_PUBLIC_API_URL como baseURL da instância axios", async () => {
       vi.stubEnv("NEXT_PUBLIC_API_URL", "https://env.test");
       vi.resetModules();
@@ -473,11 +540,11 @@ describe("createRealtimeClient", () => {
       freshAxios.defaults.adapter = adapter;
       const { connectRealtime } = await import("./realtime-client");
 
-      connectRealtime({ path: "/live", schema, onEvent: vi.fn() });
+      connectRealtime({ channel: { type: "match", id: "1" }, schema, onEvent: vi.fn() });
       await flush();
 
       expect(freshAxios.getUri(configs[0])).toBe("https://env.test/api/realtime/ticket");
-      expect(sources()[0].url).toBe("https://env.test/live?ticket=abc");
+      expect(sources()[0].url).toBe("https://env.test/api/match/1/live?ticket=abc");
     });
   });
 });

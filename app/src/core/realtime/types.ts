@@ -17,8 +17,10 @@ export class RealtimeError extends Error {
   }
 }
 
+export type RealtimeChannel = { type: "match" | "season"; id: string };
+
 export type RealtimeSubscription<T> = {
-  path: string;
+  channel: RealtimeChannel;
   schema: { parse(data: unknown): T };
   eventNames?: string[];
   staleAfterMs?: number;

@@ -1,9 +1,16 @@
-import axios, { isAxiosError, type AxiosInstance } from "axios";
+import { isAxiosError, type AxiosInstance } from "axios";
 
-import { RealtimeError, type RealtimeConnect } from "@/core/realtime/types";
+import {
+  RealtimeError,
+  type RealtimeChannel,
+  type RealtimeConnect,
+} from "@/core/realtime/types";
+import { api } from "@/lib/axios";
 
 const MIN_DELAY_MS = 1_000;
 const MAX_DELAY_MS = 30_000;
+const LIMIT_DELAY_MS = 15_000;
+const LIMIT_MESSAGE = "Limite de conexões ao vivo atingido. Tentaremos novamente em instantes.";
 
 const jitter = (ms: number) => Math.round(ms * (0.5 + Math.random() / 2));
 
@@ -13,11 +20,7 @@ function toTicketError(error: unknown): unknown {
   const { status, headers } = error.response;
   if (status === 429) {
     const seconds = Number(headers["retry-after"]);
-    return new RealtimeError(
-      "rate_limited",
-      "Limite de conexões ao vivo atingido. Tentaremos novamente em instantes.",
-      seconds > 0 ? seconds * 1_000 : undefined,
-    );
+    return new RealtimeError("rate_limited", LIMIT_MESSAGE, seconds > 0 ? seconds * 1_000 : undefined);
   }
   if (status === 408 || status >= 500) {
     return new RealtimeError("ticket_failed", `Falha ao obter o ticket (${status}).`);
@@ -25,14 +28,22 @@ function toTicketError(error: unknown): unknown {
   return new RealtimeError("ticket_rejected", `Ticket recusado (${status}).`);
 }
 
-async function requestTicket(http: AxiosInstance, signal: AbortSignal): Promise<string> {
+async function requestTicket(
+  http: AxiosInstance,
+  channel: RealtimeChannel,
+  signal: AbortSignal,
+): Promise<string> {
   const { data } = await http
-    .post<{ ticket?: unknown } | null>("/api/realtime/ticket", null, { signal })
+    .post<{ data?: { ticket?: unknown } | null } | null>(
+      "/api/realtime/ticket",
+      { channel_type: channel.type, channel_id: channel.id },
+      { signal },
+    )
     .catch((error: unknown) => {
       throw toTicketError(error);
     });
 
-  const ticket = data?.ticket;
+  const ticket = data?.data?.ticket;
   if (typeof ticket !== "string" || !ticket) {
     throw new RealtimeError("ticket_failed", "Resposta de ticket inválida.");
   }
@@ -66,10 +77,10 @@ export function createRealtimeClient(http: AxiosInstance): RealtimeConnect {
       delay = Math.min(delay * 2, MAX_DELAY_MS);
     };
 
-    const drop = () => {
+    const drop = (after?: number) => {
       clearTimeout(staleTimer);
       source?.close();
-      retry();
+      retry(after);
     };
 
     const armStale = () => {
@@ -92,9 +103,12 @@ export function createRealtimeClient(http: AxiosInstance): RealtimeConnect {
 
     async function open() {
       try {
-        const ticket = await requestTicket(http, controller.signal);
+        const { type, id } = subscription.channel;
+        const ticket = await requestTicket(http, subscription.channel, controller.signal);
 
-        source = new EventSource(http.getUri({ url: subscription.path, params: { ticket } }));
+        source = new EventSource(
+          http.getUri({ url: `/api/${type}/${id}/live`, params: { ticket } }),
+        );
         source.onopen = () => {
           delay = MIN_DELAY_MS;
           subscription.onStatus?.("open");
@@ -104,8 +118,13 @@ export function createRealtimeClient(http: AxiosInstance): RealtimeConnect {
           }
           armStale();
         };
-        source.onerror = drop;
+        source.onerror = (event) => {
+          if (!(event instanceof MessageEvent)) return drop();
+          subscription.onError?.(new RealtimeError("rate_limited", LIMIT_MESSAGE, LIMIT_DELAY_MS));
+          drop(LIMIT_DELAY_MS);
+        };
         source.onmessage = handle;
+        source.addEventListener("heartbeat", armStale);
         subscription.eventNames?.forEach((name) => source?.addEventListener(name, handle));
       } catch (error) {
         if (closed) return;
@@ -129,7 +148,4 @@ export function createRealtimeClient(http: AxiosInstance): RealtimeConnect {
   };
 }
 
-// TODO: trocar por createRealtimeClient(<instância axios de src/lib>) quando ela existir (stack.md); hoje o ticket sai sem token (anônimo) e a base vem de NEXT_PUBLIC_API_URL
-export const connectRealtime = createRealtimeClient(
-  axios.create({ baseURL: process.env.NEXT_PUBLIC_API_URL }),
-);
+export const connectRealtime = createRealtimeClient(api);
