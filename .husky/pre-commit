@@ -1,0 +1,3 @@
+cd app
+npx --no-install lint-staged || exit 1
+npm run typecheck || exit 1
