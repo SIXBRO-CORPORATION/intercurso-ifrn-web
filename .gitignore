@@ -39,7 +39,7 @@ app/.env.example
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-/.next
 /.idea
 .env
 app/node_modules
+app/.next
