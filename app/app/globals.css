@@ -141,3 +141,13 @@ body {
     @apply font-sans;
   }
 }
+@theme {
+  --color-brand-50: #eef8ef;
+  --color-brand-100: #d9efdc;
+  --color-brand-200: #b4dfba;
+  --color-brand-500: #2f9e41;
+  --color-brand-600: #278a38;
+  --color-brand-700: #1f6f2d;
+  --color-brand-800: #18551f;
+  --color-brand-900: #103a15;
+}
