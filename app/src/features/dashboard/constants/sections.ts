@@ -6,7 +6,7 @@ import {
 // Quem pode usar: USER = aluno, MONITOR (ADMIN herda tudo, como no backend).
 export type Role = "USER" | "MONITOR" | "ADMIN"
 
-export type Feature = { name: string; description: string; role: Role; uc?: string }
+export type Feature = { name: string; description: string; role: Role; uc?: string; href?: string }
 export type Section = {
   slug: string
   label: string
@@ -24,7 +24,7 @@ export const SECTIONS: Section[] = [
     icon: Radio,
     summary: "Acompanhe jogos e resultados sem precisar de login.",
     features: [
-      { name: "Lista de partidas", description: "Jogos paginados com filtro por status (agendado, em andamento, finalizado).", role: "USER" },
+      { name: "Lista de partidas", description: "Jogos paginados com filtro por status (agendado, em andamento, finalizado).", role: "USER", href: "/partidas" },
       { name: "Detalhe da partida", description: "Placar, sets, eventos e estatísticas dos jogadores.", role: "USER", uc: "UC016" },
       { name: "Feed em tempo real", description: "Gols, pontos, cartões e fim de período chegando por SSE.", role: "USER" },
       { name: "Acompanhar temporada", description: "Visão ao vivo da temporada: jogos e classificação.", role: "USER" },
@@ -118,4 +118,4 @@ export const SECTIONS: Section[] = [
 
 const RANK: Record<string, number> = { USER: 0, MONITOR: 1, ADMIN: 2 }
 export const canUse = (userRole: string | undefined, needed: Role) =>
-  (RANK[userRole ?? "USER"] ?? 0) >= RANK[needed]
+    (RANK[userRole ?? "USER"] ?? 0) >= RANK[needed]
