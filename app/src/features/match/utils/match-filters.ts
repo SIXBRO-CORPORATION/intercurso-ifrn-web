@@ -28,3 +28,8 @@ export function toQuery(filters: MatchFilters, compact = false) {
   }
   return query
 }
+
+// Qualquer mudança de filtro volta para a página 1; só `page` no patch a sobrescreve.
+export function withFilters(filters: MatchFilters, patch: Partial<MatchFilters>): MatchFilters {
+  return { ...filters, page: 1, ...patch }
+}

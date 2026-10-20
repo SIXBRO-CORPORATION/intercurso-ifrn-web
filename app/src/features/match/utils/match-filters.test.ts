@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { parseFilters, toQuery } from "./match-filters"
+import { parseFilters, toQuery, withFilters } from "./match-filters"
 
 describe("match filters", () => {
   it("aplica padrões e descarta valores inválidos", () => {
@@ -15,5 +15,11 @@ describe("match filters", () => {
   it("omite page 1 e size padrão no modo compacto", () => {
     const q = toQuery(parseFilters(new URLSearchParams("season_id=s1")), true)
     expect(q.toString()).toBe("season_id=s1")
+  })
+
+  it("volta para a página 1 ao mudar filtro, mas respeita troca de página", () => {
+    const f = parseFilters(new URLSearchParams("page=4"))
+    expect(withFilters(f, { status: "FINISHED" })).toMatchObject({ status: "FINISHED", page: 1 })
+    expect(withFilters(f, { page: 5 }).page).toBe(5)
   })
 })
