@@ -5,9 +5,10 @@ import {
   setSession,
   type SessionUser,
 } from "@/core/auth/session-store"
-import { setRefreshHandler } from "@/infrastructure/http/api-client"
+import { AUTH_API } from "@/core/config/endpoints"
+import { authHttp, setRefreshHandler } from "@/lib/axios"
 import { saveReturnPath } from "@/infrastructure/storage/return-to-storage"
-import { AUTH_API, LOGIN_URL } from "../constants"
+import { LOGIN_URL } from "../constants"
 
 type Envelope<T> = { data: T | null }
 type RefreshData = { access_token: string }
@@ -40,29 +41,27 @@ export function refreshSession(): Promise<boolean> {
   return inflight
 }
 
+const isOk = (status: number) => status >= 200 && status < 300
+
 async function doRefresh(): Promise<boolean> {
   try {
-    const res = await fetch(`${AUTH_API}/refresh`, {
-      method: "POST",
-      credentials: "include",
-    })
+    const res = await authHttp.post<Envelope<RefreshData>>(`${AUTH_API}/refresh`)
     if (res.status === 401) {
       clearSession()
       return false
     }
-    if (!res.ok) return false // falha transitória: não derruba a sessão local
+    if (!isOk(res.status)) return false // falha transitória: não derruba a sessão local
 
-    const token = ((await res.json()) as Envelope<RefreshData>).data?.access_token
+    const token = res.data?.data?.access_token
     if (!token) return false
     setAccessToken(token)
 
     // Só busca o usuário quando ainda não o temos (bootstrap), não a cada renovação.
     if (!getSnapshot().user) {
-      const me = await fetch(`${AUTH_API}/me`, {
+      const me = await authHttp.get<Envelope<MeData>>(`${AUTH_API}/me`, {
         headers: { Authorization: `Bearer ${token}` },
-        credentials: "include",
       })
-      const user = me.ok ? ((await me.json()) as Envelope<MeData>).data : null
+      const user = isOk(me.status) ? me.data?.data : null
       if (!user) {
         clearSession()
         return false
@@ -82,7 +81,7 @@ export async function bootstrapSession() {
 
 export async function logout() {
   try {
-    await fetch(`${AUTH_API}/logout`, { method: "POST", credentials: "include" })
+    await authHttp.post(`${AUTH_API}/logout`)
   } catch {
   }
   clearSession()

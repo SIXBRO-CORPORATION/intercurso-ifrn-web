@@ -4,6 +4,7 @@ const NEXT_API_URL = process.env.NEXT_API_URL ?? "http://localhost:8000";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  skipTrailingSlashRedirect: true,
   async rewrites() {
     return [{ source: "/api/:path*", destination: `${NEXT_API_URL}/api/:path*` }];
   },
