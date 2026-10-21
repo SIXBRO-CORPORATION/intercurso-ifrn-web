@@ -11,6 +11,10 @@ export function formatScheduledDate(iso: string | null) {
   return (dateOnly.test(iso) ? dateAlone : dateTime).format(date)
 }
 
+export function periodLabel(period: number | null) {
+  return period ? `${period}º período` : null
+}
+
 export function phaseLabel(match: Pick<Match, "group_name" | "match_type">) {
   return match.group_name ?? match.match_type
 }

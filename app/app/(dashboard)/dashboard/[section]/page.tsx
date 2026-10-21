@@ -5,6 +5,7 @@ import { notFound } from "next/navigation"
 import { useAuth } from "@/features/auth/contexts/auth-context"
 import { FeatureList } from "@/features/dashboard/components/feature-list"
 import { SECTIONS, canUse } from "@/features/dashboard/constants/sections"
+import { PageHeader } from "@/shared/components/page-header"
 
 export default function SectionPage({ params }: { params: Promise<{ section: string }> }) {
   const { section } = use(params)
@@ -15,10 +16,7 @@ export default function SectionPage({ params }: { params: Promise<{ section: str
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <header className="space-y-1">
-        <h1 className="text-3xl font-extrabold tracking-tight text-brand-900">{s.label}</h1>
-        <p className="text-muted-foreground">{s.summary}</p>
-      </header>
+      <PageHeader title={s.label} description={s.summary} />
       <FeatureList features={features} />
     </div>
   )
