@@ -1,37 +1,42 @@
 import Link from "next/link"
+import { ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { RevealItem } from "@/shared/components/reveal-item"
+import { Badge } from "@/shared/components/ui/badge"
+import { Card } from "@/shared/components/ui/card"
 import type { Feature, Role } from "../constants/sections"
 
 const WHO: Record<Role, string> = { USER: "Aluno", MONITOR: "Monitor", ADMIN: "Admin" }
 
 export function FeatureList({ features }: { features: Feature[] }) {
   return (
-      <ul className="grid gap-3 lg:grid-cols-2">
-        {features.map((f) => (
-            <li key={f.name} className={cn("relative flex flex-col gap-1.5 rounded-xl border bg-card p-4", f.href && "transition-colors focus-within:ring-2 focus-within:ring-brand-500 hover:border-brand-500")}>
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="font-semibold text-brand-900">
-                  {f.href ? (
-                      <Link href={f.href} className="outline-none after:absolute after:inset-0">
-                        {f.name}
-                      </Link>
-                  ) : (
-                      f.name
-                  )}
-                </h3>
-                <span
-                    className={cn(
-                        "shrink-0 rounded-full px-2 py-0.5 text-xs font-medium",
-                        f.role === "USER" ? "bg-brand-100 text-brand-800" : "bg-neutral-900 text-white",
-                    )}
-                >
-              {WHO[f.role]}
-            </span>
-              </div>
-              <p className="text-sm text-muted-foreground">{f.description}</p>
-              {f.uc && <p className="text-xs text-brand-700">Spec {f.uc}</p>}
-            </li>
-        ))}
-      </ul>
+    <ul className="grid gap-4 lg:grid-cols-2">
+      {features.map((f, i) => (
+        <RevealItem key={f.name} index={i}>
+          <Card
+            className={cn(
+              "relative flex h-full flex-col gap-2 p-5",
+              f.href && "pr-12 transition-colors focus-within:ring-3 focus-within:ring-ring/40 hover:border-primary",
+            )}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="type-section text-ink">
+                {f.href ? (
+                  <Link href={f.href} className="outline-none after:absolute after:inset-0 after:rounded-lg">
+                    {f.name}
+                  </Link>
+                ) : (
+                  f.name
+                )}
+              </h3>
+              <Badge variant={f.role === "USER" ? "success" : "dark"}>{WHO[f.role]}</Badge>
+            </div>
+            <p className="type-body-sm text-muted-foreground">{f.description}</p>
+            {f.uc && <p className="type-caption text-primary-dark">Spec {f.uc}</p>}
+            {f.href && <ChevronRight className="absolute right-4 top-1/2 size-5 -translate-y-1/2 text-faint" aria-hidden />}
+          </Card>
+        </RevealItem>
+      ))}
+    </ul>
   )
 }

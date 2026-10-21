@@ -7,13 +7,13 @@ export function MatchPagination({ page, size, total, onPage }: Props) {
   const pages = Math.max(1, Math.ceil(total / size))
   return (
     <nav aria-label="Paginação" className="flex items-center justify-between gap-3">
-      <Button variant="outline" size="lg" disabled={page <= 1} onClick={() => onPage(page - 1)}>
+      <Button variant="outline" disabled={page <= 1} onClick={() => onPage(page - 1)}>
         <ChevronLeft aria-hidden /> Anterior
       </Button>
-      <p className="text-sm text-muted-foreground" aria-live="polite">
+      <p className="type-body-sm text-muted-foreground" aria-live="polite">
         Página {page} de {pages}
       </p>
-      <Button variant="outline" size="lg" disabled={page >= pages} onClick={() => onPage(page + 1)}>
+      <Button variant="outline" disabled={page >= pages} onClick={() => onPage(page + 1)}>
         Próxima <ChevronRight aria-hidden />
       </Button>
     </nav>

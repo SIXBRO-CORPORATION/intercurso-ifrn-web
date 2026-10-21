@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { formatScheduledDate, phaseLabel } from "./match-card"
+import { formatScheduledDate, periodLabel, phaseLabel } from "./match-card"
 
 describe("formatScheduledDate", () => {
   it("devolve null sem data ou com data inválida", () => {
@@ -21,5 +21,13 @@ describe("phaseLabel", () => {
     expect(phaseLabel({ group_name: "A", match_type: "GROUP" })).toBe("A")
     expect(phaseLabel({ group_name: null, match_type: "FINAL" })).toBe("FINAL")
     expect(phaseLabel({ group_name: null, match_type: null })).toBeNull()
+  })
+})
+
+describe("periodLabel", () => {
+  it("devolve null sem período e formata o número quando existe", () => {
+    expect(periodLabel(null)).toBeNull()
+    expect(periodLabel(0)).toBeNull()
+    expect(periodLabel(2)).toBe("2º período")
   })
 })
