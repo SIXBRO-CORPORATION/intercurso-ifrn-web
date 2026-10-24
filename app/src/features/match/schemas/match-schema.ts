@@ -17,7 +17,7 @@ export const matchSchema = z.object({
   bracket_id: z.string().nullable(),
   modality_id: z.string(),
   modality_name: z.string(),
-  group_name: z.string().nullable(),
+  group_name: z.string().nullish().transform((v) => v ?? null),
   match_type: z.string().nullable(),
   match_category: z.string().nullable(),
   status: z.enum(MATCH_STATUSES),
@@ -61,7 +61,6 @@ const matchEventSchema = z.object({
 })
 
 export const matchDetailSchema = matchSchema.extend({
-  group_name: z.string().nullish().transform((v) => v ?? null),
   sets: z.array(matchSetSchema),
   team1_players: z.array(matchPlayerSchema),
   team2_players: z.array(matchPlayerSchema),

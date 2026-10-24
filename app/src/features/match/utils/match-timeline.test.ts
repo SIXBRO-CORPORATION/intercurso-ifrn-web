@@ -32,11 +32,17 @@ describe("timelineRows", () => {
   it("resolve jogador/time, ignora tipo desconhecido e numera os sets", () => {
     const r = rows()
     expect(r.map((x) => x.label)).toEqual(["Gol", "Cartão amarelo", "Fim do set 1", "Fim do set 2"])
-    expect(r[0]).toMatchObject({ minute: 2, team: "Info", player: "Lucas" })
+    expect(r[0]).toMatchObject({ clock: "02:05", team: "Info", player: "Lucas" })
   })
 
   it("jogador fora do elenco mostra só o time", () => {
     expect(rows()[1]).toMatchObject({ team: "Edif", player: null })
+  })
+
+  it("vôlei não exibe tempo", () => {
+    const volley = { team1: { ...base.team1, sets_won: 1 }, team2: { ...base.team2, sets_won: 0 } }
+    const r = rows({ ...volley, timeline: [base.timeline[4], base.timeline[3]] })
+    expect(r.map((x) => x.clock)).toEqual([null, null])
   })
 
   it("inverte a ordem somente ao vivo", () => {
