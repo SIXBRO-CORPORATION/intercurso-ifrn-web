@@ -1,6 +1,6 @@
 import type { MatchStatus } from "../schemas/match-schema"
 
-export type { Match, MatchPage, MatchStatus, MatchTeam } from "../schemas/match-schema"
+export type { Match, MatchDetail, MatchPage, MatchStatus, MatchTeam } from "../schemas/match-schema"
 
 export type MatchFilters = {
   season_id: string
