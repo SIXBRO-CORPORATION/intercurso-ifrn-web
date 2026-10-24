@@ -1,27 +1,31 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { getMatch } from "../repositories/match-repository"
 import type { MatchDetail } from "../types/match"
 
-type Result = { id: string; match: MatchDetail | null } | { id: string; failed: true }
+type Result = { key: string; match: MatchDetail | null } | { key: string; failed: true }
 
 export function useMatch(id: string) {
+  const [attempt, setAttempt] = useState(0)
   const [result, setResult] = useState<Result | null>(null)
+  const key = `${attempt}:${id}`
 
   useEffect(() => {
     const controller = new AbortController()
     getMatch(id, controller.signal).then(
-      (match) => setResult({ id, match }),
+      (match) => setResult({ key, match }),
       () => {
-        if (!controller.signal.aborted) setResult({ id, failed: true })
+        if (!controller.signal.aborted) setResult({ key, failed: true })
       },
     )
     return () => controller.abort()
-  }, [id])
+  }, [id, key])
 
-  if (result?.id !== id) return { status: "loading" } as const
-  if ("failed" in result) return { status: "error" } as const
-  if (!result.match) return { status: "not-found" } as const
-  return { status: "success", match: result.match } as const
+  const refetch = useCallback(() => setAttempt((n) => n + 1), [])
+
+  if (result?.key !== key) return { status: "loading", refetch } as const
+  if ("failed" in result) return { status: "error", refetch } as const
+  if (!result.match) return { status: "not-found", refetch } as const
+  return { status: "success", match: result.match, refetch } as const
 }

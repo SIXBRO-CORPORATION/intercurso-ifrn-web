@@ -42,6 +42,14 @@ describe("matchListSchema", () => {
   })
 })
 
+describe("matchSchema", () => {
+  it("aceita group_name ausente e normaliza para null", () => {
+    const rest: Partial<typeof match> = { ...match }
+    delete rest.group_name
+    expect(matchListSchema.parse(page([rest])).data.items[0].group_name).toBeNull()
+  })
+})
+
 describe("matchDetailSchema", () => {
   it("aceita o payload real do detalhe, sem group_name nem matrícula", () => {
     const rest: Partial<typeof match> = { ...match }
