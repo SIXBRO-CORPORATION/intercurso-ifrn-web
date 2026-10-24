@@ -17,7 +17,7 @@ export const matchSchema = z.object({
   bracket_id: z.string().nullable(),
   modality_id: z.string(),
   modality_name: z.string(),
-  group_name: z.string().nullable(),
+  group_name: z.string().nullish().transform((v) => v ?? null),
   match_type: z.string().nullable(),
   match_category: z.string().nullable(),
   status: z.enum(MATCH_STATUSES),
@@ -43,3 +43,30 @@ export type Match = z.infer<typeof matchSchema>
 export type MatchTeam = NonNullable<Match["team1"]>
 export type MatchStatus = Match["status"]
 export type MatchPage = z.infer<typeof matchPageSchema>
+
+const matchSetSchema = z.object({
+  set_number: z.number().int(),
+  team1_points: z.number(),
+  team2_points: z.number(),
+})
+
+const matchPlayerSchema = z.object({ user_id: z.string(), name: z.string() })
+
+const matchEventSchema = z.object({
+  event_id: z.string(),
+  event_type: z.string(),
+  clock_seconds: z.number(),
+  team_id: z.string().nullish(),
+  player_id: z.string().nullish(),
+})
+
+export const matchDetailSchema = matchSchema.extend({
+  sets: z.array(matchSetSchema),
+  team1_players: z.array(matchPlayerSchema),
+  team2_players: z.array(matchPlayerSchema),
+  timeline: z.array(matchEventSchema),
+})
+
+export const matchDetailResponseSchema = envelopeSchema(matchDetailSchema)
+
+export type MatchDetail = z.infer<typeof matchDetailSchema>

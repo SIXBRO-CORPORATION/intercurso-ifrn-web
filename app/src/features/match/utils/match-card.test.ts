@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { formatScheduledDate, periodLabel, phaseLabel } from "./match-card"
+import { formatClock, formatScheduledDate, periodLabel, phaseLabel } from "./match-card"
 
 describe("formatScheduledDate", () => {
   it("devolve null sem data ou com data inválida", () => {
@@ -29,5 +29,14 @@ describe("periodLabel", () => {
     expect(periodLabel(null)).toBeNull()
     expect(periodLabel(0)).toBeNull()
     expect(periodLabel(2)).toBe("2º período")
+  })
+})
+
+describe("formatClock", () => {
+  it("formata mm:ss e tolera nulo/negativo", () => {
+    expect(formatClock(754)).toBe("12:34")
+    expect(formatClock(5)).toBe("00:05")
+    expect(formatClock(null)).toBe("00:00")
+    expect(formatClock(-3)).toBe("00:00")
   })
 })

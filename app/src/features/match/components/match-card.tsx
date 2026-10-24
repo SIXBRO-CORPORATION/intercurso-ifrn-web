@@ -1,4 +1,5 @@
 import { Trophy } from "lucide-react"
+import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { LiveDot } from "@/shared/components/live-dot"
 import { Avatar, type avatarVariants } from "@/shared/components/ui/avatar"
@@ -101,5 +102,12 @@ function ListCard({ match }: { match: Match }) {
 }
 
 export function MatchCard({ match }: { match: Match }) {
-  return match.status === "IN_PROGRESS" ? <LiveCard match={match} /> : <ListCard match={match} />
+  return (
+    <Link
+      href={`/partidas/${match.match_id}`}
+      className="block h-full rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+    >
+      {match.status === "IN_PROGRESS" ? <LiveCard match={match} /> : <ListCard match={match} />}
+    </Link>
+  )
 }
