@@ -2,7 +2,7 @@ import { LiveDot } from "@/shared/components/live-dot"
 import { Avatar } from "@/shared/components/ui/avatar"
 import { STATUS_OPTIONS } from "../constants"
 import type { MatchDetail, MatchTeam } from "../types/match"
-import { formatClock, formatScheduledDate, periodLabel, phaseLabel } from "../utils/match-card"
+import { formatClock, formatScheduledDate, isVolleyMatch, periodLabel, phaseLabel } from "../utils/match-card"
 
 function Team({ team }: { team: MatchTeam | null }) {
   return (
@@ -15,9 +15,9 @@ function Team({ team }: { team: MatchTeam | null }) {
 
 export function MatchHeader({ match }: { match: MatchDetail }) {
   const { team1, team2, status } = match
-  const volley = team1?.sets_won != null // vôlei: placar principal = sets; team.score é o set atual
+  const volley = isVolleyMatch(match)
   const shootout = team1?.penalty_score != null && team2?.penalty_score != null
-  const main = (t: MatchTeam | null) => (t && status !== "SCHEDULED" ? (volley ? t.sets_won : t.score) : "–")
+  const main = (t: MatchTeam | null) => (t && status !== "SCHEDULED" ? (volley ? t.sets_won : t.score) ?? "–" : "–")
   const penalty = (t: MatchTeam | null) => shootout && <span className="text-2xl"> ({t?.penalty_score})</span>
 
   const live = status === "IN_PROGRESS"

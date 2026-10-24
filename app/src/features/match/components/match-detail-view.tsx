@@ -21,7 +21,7 @@ export function MatchDetailView({ id }: { id: string }) {
   if (result.status === "error") {
     return (
       <MatchListMessage alert title="Não foi possível carregar a partida.">
-        <Button variant="danger" onClick={() => window.location.reload()}>Tentar novamente</Button>
+        <Button variant="danger" onClick={result.refetch}>Tentar novamente</Button>
       </MatchListMessage>
     )
   }
