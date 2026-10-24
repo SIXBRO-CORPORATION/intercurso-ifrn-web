@@ -10,6 +10,13 @@ export const STATUS_OPTIONS: { value: MatchStatus; label: string }[] = [
   { value: "FINISHED", label: "Finalizado" },
 ]
 
+export const STATUS_TABS: { value: MatchStatus | ""; label: string }[] = [
+  { value: "", label: "Todos" },
+  { value: "IN_PROGRESS", label: "Ao vivo" },
+  { value: "SCHEDULED", label: "Agendados" },
+  { value: "FINISHED", label: "Finalizados" },
+]
+
 export const EVENT_TYPES: Record<string, { label: string; icon: LucideIcon; className?: string }> = {
   MATCH_STARTED: { label: "Início da partida", icon: Play },
   MATCH_END: { label: "Fim da partida", icon: Flag },

@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Partidas | Intercurso IFRN" }
 
 export default function PartidasPage() {
   return (
-    <main className="mx-auto w-full max-w-5xl space-y-6 p-6 md:p-10">
+    <main className="mx-auto w-full max-w-3xl space-y-6 p-6 md:p-10">
       <PageHeader title="Partidas" description="Acompanhe jogos e resultados da temporada ativa." />
       <Suspense fallback={<MatchListLoading />}>
         <MatchListView />

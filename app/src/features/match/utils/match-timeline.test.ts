@@ -45,6 +45,11 @@ describe("timelineRows", () => {
     expect(r.map((x) => x.clock)).toEqual([null, null])
   })
 
+  it("indica o lado do time e deixa eventos neutros sem lado", () => {
+    const r = rows()
+    expect(r.map((x) => x.side)).toEqual([1, 2, null, null])
+  })
+
   it("inverte a ordem somente ao vivo", () => {
     expect(rows({ status: "IN_PROGRESS" })[0].label).toBe("Fim do set 2")
     expect(rows()[0].label).toBe("Gol")

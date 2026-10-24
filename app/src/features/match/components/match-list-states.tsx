@@ -6,11 +6,18 @@ export function MatchListLoading() {
   return (
     <div role="status" aria-busy="true">
       <span className="sr-only">Carregando partidas…</span>
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-hidden>
-        {Array.from({ length: 6 }, (_, i) => (
-          <li key={i} className="h-48 rounded-xl bg-border/60 motion-safe:animate-pulse" />
+      <div className="space-y-6" aria-hidden>
+        {Array.from({ length: 2 }, (_, g) => (
+          <div key={g} className="space-y-2">
+            <div className="h-8 w-40 rounded-xs bg-border/60 motion-safe:animate-pulse" />
+            <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
+              {Array.from({ length: 3 }, (_, i) => (
+                <li key={i} className="h-20 motion-safe:animate-pulse bg-border/30" />
+              ))}
+            </ul>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   )
 }
