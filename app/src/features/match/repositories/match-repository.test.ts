@@ -1,8 +1,8 @@
-import type { InternalAxiosRequestConfig } from "axios"
+import { AxiosError, type InternalAxiosRequestConfig } from "axios"
 import { beforeEach, describe, expect, it } from "vitest"
 import { api } from "@/lib/axios"
 import { parseFilters, toQuery } from "../utils/match-filters"
-import { listMatches } from "./match-repository"
+import { getMatch, listMatches } from "./match-repository"
 
 const match = {
   match_id: "m1",
@@ -23,13 +23,17 @@ const match = {
 }
 
 let reply: unknown
+let status: number
 let calls: InternalAxiosRequestConfig[]
 
 beforeEach(() => {
   calls = []
+  status = 200
   api.defaults.adapter = async (config) => {
     calls.push(config)
-    return { data: reply, status: 200, statusText: "", headers: {}, config }
+    const response = { data: reply, status, statusText: "", headers: {}, config }
+    if (status >= 400) throw new AxiosError("fail", "ERR_BAD_REQUEST", config, null, response)
+    return response
   }
 })
 
@@ -48,5 +52,26 @@ describe("listMatches", () => {
   it("rejeita resposta fora do contrato", async () => {
     reply = { data: { items: [{ ...match, status: "OUTRO" }], total: 1, page: 1, size: 12 } }
     await expect(listMatches(new URLSearchParams(), new AbortController().signal)).rejects.toThrow()
+  })
+})
+
+describe("getMatch", () => {
+  const signal = new AbortController().signal
+
+  it("busca /api/match/{id} e devolve o detalhe validado", async () => {
+    reply = { data: { ...match, sets: [{ set_number: 1, team1_points: 25, team2_points: 20, winner_team_id: "t1" }], team1_players: [], team2_players: [], timeline: [] } }
+    const detail = await getMatch("m1", signal)
+    expect(calls[0].url).toBe("/api/match/m1")
+    expect(detail?.sets).toEqual([{ set_number: 1, team1_points: 25, team2_points: 20 }])
+  })
+
+  it.each([404, 422])("traduz %i em null (não encontrada)", async (code) => {
+    status = code
+    expect(await getMatch("x", signal)).toBeNull()
+  })
+
+  it("repassa outros erros", async () => {
+    status = 500
+    await expect(getMatch("m1", signal)).rejects.toThrow()
   })
 })
