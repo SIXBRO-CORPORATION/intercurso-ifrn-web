@@ -18,3 +18,9 @@ export function periodLabel(period: number | null) {
 export function phaseLabel(match: Pick<Match, "group_name" | "match_type">) {
   return match.group_name ?? match.match_type
 }
+
+export function formatClock(seconds: number | null) {
+  const total = Math.max(0, Math.floor(seconds ?? 0))
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${pad(Math.floor(total / 60))}:${pad(total % 60)}`
+}
