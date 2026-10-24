@@ -17,10 +17,11 @@ export function MatchHeader({ match }: { match: MatchDetail }) {
   const { team1, team2, status } = match
   const volley = isVolleyMatch(match)
   const shootout = team1?.penalty_score != null && team2?.penalty_score != null
-  const main = (t: MatchTeam | null) => (t && status !== "SCHEDULED" ? (volley ? t.sets_won : t.score) ?? "–" : "–")
+  const live = status === "IN_PROGRESS"
+  const currentSet = volley && live
+  const main = (t: MatchTeam | null) => (t && status !== "SCHEDULED" ? ((volley && !live ? t.sets_won : t.score) ?? "–") : "–")
   const penalty = (t: MatchTeam | null) => shootout && <span className="text-2xl"> ({t?.penalty_score})</span>
 
-  const live = status === "IN_PROGRESS"
   const phase = phaseLabel(match)
   const date = formatScheduledDate(match.scheduled_date)
   const period = !volley && live ? periodLabel(match.current_period) : null
@@ -38,20 +39,26 @@ export function MatchHeader({ match }: { match: MatchDetail }) {
       </header>
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         <Team team={team1} />
-        <p className="type-score">
-          <span className="sr-only">Placar </span>
-          {main(team1)}
-          {penalty(team1)} – {main(team2)}
-          {penalty(team2)}
-        </p>
+        <div className="flex flex-col items-center gap-1">
+          <p className="type-score">
+            <span className="sr-only">{currentSet ? "Placar do set atual " : "Placar "}</span>
+            {main(team1)}
+            {penalty(team1)} – {main(team2)}
+            {penalty(team2)}
+          </p>
+          {currentSet && team1 && team2 && (
+            <>
+              <p className="type-caption text-white/80">Set {match.sets.length + 1}</p>
+              <p className="type-label tabular-nums text-white/90">
+                <span className="sr-only">Sets ganhos </span>
+                {team1.sets_won ?? 0} – {team2.sets_won ?? 0}
+              </p>
+            </>
+          )}
+        </div>
         <Team team={team2} />
       </div>
-      {volley && team1 && team2 && live && (
-        <p className="type-caption text-center text-white/80">
-          Set {match.sets.length + 1}: {team1.score} – {team2.score}
-        </p>
-      )}
-      {pastSets && <p className="type-caption text-center text-white/80">Sets: {pastSets}</p>}
+      {pastSets && <p className="type-caption text-center text-white/80">Parciais: {pastSets}</p>}
       <footer className="space-y-0.5 text-center">
         <p className="truncate text-sm font-bold">{match.modality_name}</p>
         <p className="type-caption text-white/80">{[phase, date].filter(Boolean).join(" · ")}</p>
