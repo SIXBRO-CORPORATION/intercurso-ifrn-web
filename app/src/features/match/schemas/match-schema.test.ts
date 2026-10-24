@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { matchListSchema } from "./match-schema"
+import { matchDetailSchema, matchListSchema } from "./match-schema"
 
 const team = { team_id: "t1", name: "Informática", photo: null, score: 2, sets_won: 0, penalty_score: 0 }
 
@@ -39,5 +39,23 @@ describe("matchListSchema", () => {
     expect(() => matchListSchema.parse(page([{ ...match, status: "XYZ" }]))).toThrow()
     expect(() => matchListSchema.parse(page([{ ...match, clock_running: undefined }]))).toThrow()
     expect(() => matchListSchema.parse({ data: null })).toThrow()
+  })
+})
+
+describe("matchDetailSchema", () => {
+  it("aceita o payload real do detalhe, sem group_name nem matrícula", () => {
+    const rest: Partial<typeof match> = { ...match }
+    delete rest.group_name
+    const detail = matchDetailSchema.parse({
+      ...rest,
+      status: "FINISHED",
+      team1: { ...team, sets_won: null, penalty_score: null },
+      sets: [],
+      team1_players: [{ user_id: "p1", name: "Lucas Silva", role: "OWNER" }],
+      team2_players: [],
+      timeline: [{ event_id: "e1", event_type: "GOAL", clock_seconds: 450, team_id: "t1", player_id: "p1", created_at: "x", metadata: null }],
+    })
+    expect(detail.group_name).toBeNull()
+    expect(detail.team1_players).toEqual([{ user_id: "p1", name: "Lucas Silva" }])
   })
 })
