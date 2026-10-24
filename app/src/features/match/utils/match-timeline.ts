@@ -1,8 +1,6 @@
 import { EVENT_TYPES } from "../constants"
 import type { MatchDetail } from "../types/match"
 
-// Jogador fora do elenco da partida (ex.: saiu do time depois do evento) não quebra a linha:
-// mostra só o time.
 export function timelineRows(match: MatchDetail) {
   const teams = new Map<string, string>()
   for (const t of [match.team1, match.team2]) if (t) teams.set(t.team_id, t.name)
@@ -22,6 +20,5 @@ export function timelineRows(match: MatchDetail) {
       player: (e.player_id && players.get(e.player_id)) || null,
     }]
   })
-  // Ao vivo: mais recente primeiro; depois do jogo: ordem cronológica.
   return match.status === "IN_PROGRESS" ? rows.reverse() : rows
 }
