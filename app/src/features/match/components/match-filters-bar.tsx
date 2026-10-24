@@ -1,6 +1,6 @@
 import { Button } from "@/shared/components/ui/button"
 import { Chip } from "@/shared/components/ui/chip"
-import { fieldClass } from "@/shared/components/ui/field-class"
+import { DatePicker } from "@/shared/components/ui/date-picker"
 import { STATUS_OPTIONS } from "../constants"
 import type { MatchFilters } from "../types/match"
 
@@ -23,11 +23,11 @@ export function MatchFiltersBar({ filters, onChange }: Props) {
       <div className="flex flex-wrap items-end gap-3">
         <label className={label}>
           De
-          <input type="date" className={fieldClass} value={filters.date_from} max={filters.date_to || undefined} onChange={(e) => onChange({ date_from: e.target.value })} />
+          <DatePicker value={filters.date_from} max={filters.date_to || undefined} onChange={(v) => onChange({ date_from: v })} />
         </label>
         <label className={label}>
           Até
-          <input type="date" className={fieldClass} value={filters.date_to} min={filters.date_from || undefined} onChange={(e) => onChange({ date_to: e.target.value })} />
+          <DatePicker value={filters.date_to} min={filters.date_from || undefined} onChange={(v) => onChange({ date_to: v })} />
         </label>
         {active && (
           <Button type="button" variant="ghost" onClick={() => onChange({ status: "", date_from: "", date_to: "" })}>
