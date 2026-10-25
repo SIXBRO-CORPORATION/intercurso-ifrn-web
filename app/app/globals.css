@@ -14,12 +14,15 @@
   --primary: #2f9e41;
   --primary-foreground: #ffffff;
   --primary-dark: #1e7a30;
+  --action: #1e7a30;
+  --action-hover: #18682a;
   --primary-soft: #e5f4e8;
   --primary-muted: #bfe3c6;
   --secondary: #e5f4e8;
   --secondary-foreground: #1e7a30;
   --muted: #f1f4f1;
   --muted-foreground: #6b7a70;
+  --text-secondary: #5c6b61;
   --faint: #a9b4ac;
   --accent: #e5f4e8;
   --accent-foreground: #1e7a30;
@@ -32,6 +35,13 @@
   --input: #e1e7e2;
   --ring: #2f9e41;
   --radius: 1rem;
+  --focus-ring: 0 0 0 3px rgb(47 158 65 / 0.28);
+
+  /* layout (web) */
+  --sidebar-width: 248px;
+  --topbar-height: 64px;
+  --navbar-height: 72px;
+  --container-public: 1200px;
 }
 
 @theme inline {
@@ -47,6 +57,8 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-dark: var(--primary-dark);
+  --color-action: var(--action);
+  --color-action-hover: var(--action-hover);
   --color-primary-soft: var(--primary-soft);
   --color-primary-muted: var(--primary-muted);
   --color-secondary: var(--secondary);
@@ -54,6 +66,8 @@
   --color-muted: var(--muted);
   --color-field: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-text-secondary: var(--text-secondary);
+  --color-surface: var(--card);
   --color-faint: var(--faint);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
@@ -83,11 +97,15 @@
   --radius-lg: 1.375rem;
   --radius-xl: 1.625rem;
   --radius-2xl: 1.875rem;
+  --shadow-sm: 0 1px 2px rgb(15 26 19 / 0.06);
+  --shadow-md: 0 8px 24px rgb(15 26 19 / 0.08);
+  --shadow-lg: 0 24px 64px rgb(15 26 19 / 0.22);
   --shadow-card: 0 6px 12px rgb(15 26 19 / 0.07);
   --shadow-sheet: 0 14px 24px rgb(15 26 19 / 0.18);
   --shadow-primary: 0 7px 14px rgb(47 158 65 / 0.28);
 }
 
+/* escala tipografica app (existente) */
 @utility type-large-title {
   font-size: 1.75rem;
   line-height: 2.125rem;
@@ -168,6 +186,44 @@
   line-height: 1.5rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+/* escala tipografica web (desktop) */
+@utility type-display {
+  font-size: 3rem;
+  line-height: 3.5rem;
+  font-weight: 700;
+}
+
+@utility type-h1 {
+  font-size: 2rem;
+  line-height: 2.5rem;
+  font-weight: 700;
+}
+
+@utility type-h2 {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+}
+
+@utility type-h3 {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 700;
+}
+
+@utility type-h4 {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 700;
+}
+
+@utility focus-ring {
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
 }
 
 @layer base {
