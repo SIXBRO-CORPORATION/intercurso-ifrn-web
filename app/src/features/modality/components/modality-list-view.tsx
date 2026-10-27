@@ -12,9 +12,9 @@ export function ModalityListView() {
   const active = season.status === "success" ? season.season : null
 
   return (
-    <div className="space-y-4">
-      {active && <Badge variant="success">{active.name}</Badge>}
-      <ModalityList seasonId={active?.season_id} />
-    </div>
+      <div className="space-y-4">
+        {active && <Badge variant="success">{active.name}</Badge>}
+        <ModalityList seasonId={active?.season_id} />
+      </div>
   )
 }
