@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { LiveDot } from "@/shared/components/live-dot"
 import { Avatar } from "@/shared/components/ui/avatar"
 import { STATUS_OPTIONS } from "../constants"
@@ -13,8 +14,23 @@ function Team({ team }: { team: MatchTeam | null }) {
   )
 }
 
+function useClockSeconds({ clock_seconds, clock_running }: MatchDetail) {
+  const [ticks, setTicks] = useState({ base: clock_seconds, n: 0 })
+  useEffect(() => {
+    if (!clock_running) return
+    const timer = setInterval(
+      () => setTicks((t) => ({ base: clock_seconds, n: (t.base === clock_seconds ? t.n : 0) + 1 })),
+      1_000,
+    )
+    return () => clearInterval(timer)
+  }, [clock_seconds, clock_running])
+  if (clock_seconds == null) return null
+  return clock_seconds + (clock_running && ticks.base === clock_seconds ? ticks.n : 0)
+}
+
 export function MatchHeader({ match }: { match: MatchDetail }) {
   const { team1, team2, status } = match
+  const clock = useClockSeconds(match)
   const volley = isVolleyMatch(match)
   const shootout = team1?.penalty_score != null && team2?.penalty_score != null
   const live = status === "IN_PROGRESS"
@@ -35,7 +51,7 @@ export function MatchHeader({ match }: { match: MatchDetail }) {
           {live && match.clock_running && <LiveDot />}
           {live && match.clock_running ? "Ao vivo" : statusLabel}
         </span>
-        <span className="type-caption text-white/80">{[period, live && formatClock(match.clock_seconds)].filter(Boolean).join(" · ")}</span>
+        <span className="type-caption text-white/80">{[period, live && formatClock(clock)].filter(Boolean).join(" · ")}</span>
       </header>
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         <Team team={team1} />

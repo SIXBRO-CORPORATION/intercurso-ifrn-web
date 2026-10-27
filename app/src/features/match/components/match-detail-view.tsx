@@ -27,6 +27,11 @@ export function MatchDetailView({ id }: { id: string }) {
   }
   return (
     <div className="space-y-8">
+      {result.connection === "reconnecting" && (
+        <p role="status" className="type-caption text-center text-muted-foreground">
+          Conexão perdida. Reconectando…
+        </p>
+      )}
       <MatchHeader match={result.match} />
       <MatchTimeline match={result.match} />
       <MatchRoster match={result.match} />
