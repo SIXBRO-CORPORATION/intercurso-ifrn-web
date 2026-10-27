@@ -43,3 +43,4 @@ next-env.d.ts
 .env
 app/node_modules
 app/.next
+app/.env.local
