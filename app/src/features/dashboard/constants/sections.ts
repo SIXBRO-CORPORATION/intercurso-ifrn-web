@@ -48,7 +48,7 @@ export const SECTIONS: Section[] = [
     icon: Trophy,
     summary: "Esportes do Intercurso e suas regras.",
     features: [
-      { name: "Ver modalidades", description: "Modalidades disponíveis com formato e gênero.", role: "USER" },
+      { name: "Ver modalidades", description: "Modalidades disponíveis com formato e gênero.", role: "USER", href: "/modalidades" },
       { name: "Cadastrar modalidade", description: "Formato (mata-mata, grupos + mata-mata, pontos corridos, triangular), modo de gênero e configuração, como a de vôlei.", role: "MONITOR", uc: "UC004" },
     ],
   },

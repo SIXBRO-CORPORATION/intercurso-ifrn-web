@@ -6,8 +6,8 @@ import { useRequest } from "./use-request"
 
 export function useModalityTeams(modalityId: string, seasonId?: string) {
   const load = useCallback(
-    (signal: AbortSignal) => listModalityTeams(modalityId, seasonId, signal),
-    [modalityId, seasonId],
+      (signal: AbortSignal) => listModalityTeams(modalityId, seasonId, signal),
+      [modalityId, seasonId],
   )
   return useRequest(`teams:${modalityId}:${seasonId ?? "all"}`, load)
 }

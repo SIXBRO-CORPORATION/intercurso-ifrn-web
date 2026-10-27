@@ -13,8 +13,8 @@ export function ModalityBackButton({ fallbackHref = "/" }: { fallbackHref?: stri
   }
 
   return (
-    <Button type="button" variant="ghost" size="sm" onClick={goBack} className="-ml-3">
-      <ArrowLeft aria-hidden /> Voltar
-    </Button>
+      <Button type="button" variant="ghost" size="sm" onClick={goBack} className="-ml-3">
+        <ArrowLeft aria-hidden /> Voltar
+      </Button>
   )
 }

@@ -12,10 +12,10 @@ export function useRequest<T>(key: string, load: (signal: AbortSignal) => Promis
   useEffect(() => {
     const controller = new AbortController()
     load(controller.signal).then(
-      (data) => setResult({ key: requestKey, data }),
-      () => {
-        if (!controller.signal.aborted) setResult({ key: requestKey, failed: true })
-      },
+        (data) => setResult({ key: requestKey, data }),
+        () => {
+          if (!controller.signal.aborted) setResult({ key: requestKey, failed: true })
+        },
     )
     return () => controller.abort()
   }, [requestKey, load])

@@ -18,14 +18,14 @@ export function ModalityPhoto({ src, fallback, className }: ModalityPhotoProps) 
   if (!resolved || failedSrc === resolved) return <>{fallback}</>
 
   return (
-    <Image
-      src={resolved}
-      alt=""
-      width={96}
-      height={96}
-      unoptimized
-      onError={() => setFailedSrc(resolved)}
-      className={cn("shrink-0 rounded-full object-cover", className)}
-    />
+      <Image
+          src={resolved}
+          alt=""
+          width={96}
+          height={96}
+          unoptimized
+          onError={() => setFailedSrc(resolved)}
+          className={cn("shrink-0 rounded-full object-cover", className)}
+      />
   )
 }
