@@ -1,3 +1,5 @@
+"use client"
+
 import { Trophy } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -7,6 +9,7 @@ import { Badge } from "@/shared/components/ui/badge"
 import { Card } from "@/shared/components/ui/card"
 import type { VariantProps } from "class-variance-authority"
 import { STATUS_OPTIONS } from "../constants"
+import { usePrefetchMatch } from "../hooks/use-prefetch-match"
 import type { Match, MatchTeam } from "../types/match"
 import { formatScheduledDate, periodLabel, phaseLabel } from "../utils/match-card"
 
@@ -102,9 +105,13 @@ function ListCard({ match }: { match: Match }) {
 }
 
 export function MatchCard({ match }: { match: Match }) {
+  const prefetch = usePrefetchMatch()
+  const warm = () => prefetch(match.match_id)
   return (
     <Link
       href={`/partidas/${match.match_id}`}
+      onPointerEnter={warm}
+      onFocus={warm}
       className="block h-full rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
     >
       {match.status === "IN_PROGRESS" ? <LiveCard match={match} /> : <ListCard match={match} />}

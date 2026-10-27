@@ -1,26 +1,17 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { getActiveSeason } from "../repositories/season-repository"
-import type { Season } from "../schemas/season-schema"
 
-type Result = { season: Season | null } | { failed: true }
+const FIVE_MINUTES = 5 * 60_000
 
 export function useActiveSeason() {
-  const [result, setResult] = useState<Result | null>(null)
+  const query = useQuery({
+    queryKey: ["season", "active"],
+    queryFn: ({ signal }) => getActiveSeason(signal),
+    staleTime: FIVE_MINUTES,
+  })
 
-  useEffect(() => {
-    const controller = new AbortController()
-    getActiveSeason(controller.signal).then(
-      (season) => setResult({ season }),
-      () => {
-        if (!controller.signal.aborted) setResult({ failed: true })
-      },
-    )
-    return () => controller.abort()
-  }, [])
-
-  if (!result) return { status: "loading" } as const
-  if ("failed" in result) return { status: "error" } as const
-  return { status: "success", season: result.season } as const
+  if (query.data === undefined) return query.isError ? ({ status: "error" } as const) : ({ status: "loading" } as const)
+  return { status: "success", season: query.data } as const
 }

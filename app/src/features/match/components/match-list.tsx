@@ -1,6 +1,7 @@
 "use client"
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { cn } from "@/lib/utils"
 import { RevealItem } from "@/shared/components/reveal-item"
 import { Button } from "@/shared/components/ui/button"
 import { useMatches } from "../hooks/use-matches"
@@ -30,11 +31,11 @@ export function MatchList({ seasonId }: { seasonId: string }) {
       {result.status === "loading" && <MatchListLoading />}
       {result.status === "error" && (
         <MatchListMessage alert title="Não foi possível carregar as partidas.">
-          <Button variant="danger" onClick={() => window.location.reload()}>Tentar novamente</Button>
+          <Button variant="danger" onClick={result.refetch}>Tentar novamente</Button>
         </MatchListMessage>
       )}
       {result.status === "success" && (
-        <>
+        <div aria-busy={result.stale} className={cn("space-y-6 transition-opacity", result.stale && "opacity-60")}>
           {result.page.items.length ? (
             <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {result.page.items.map((m, i) => (
@@ -49,7 +50,7 @@ export function MatchList({ seasonId }: { seasonId: string }) {
           {result.page.total > 0 && (
             <MatchPagination page={result.page.page} size={result.page.size} total={result.page.total} onPage={(page) => update({ page })} />
           )}
-        </>
+        </div>
       )}
     </div>
   )

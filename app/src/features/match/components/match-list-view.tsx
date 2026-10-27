@@ -1,6 +1,6 @@
 "use client"
 
-import { useActiveSeason } from "@/features/season"
+import { useActiveSeason } from "@/features/season/hooks/use-active-season"
 import { MatchList } from "./match-list"
 import { MatchListLoading, MatchListMessage } from "./match-list-states"
 

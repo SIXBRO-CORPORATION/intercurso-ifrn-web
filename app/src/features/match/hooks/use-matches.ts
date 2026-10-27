@@ -1,28 +1,22 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { matchKeys } from "../constants/query-keys"
 import { listMatches } from "../repositories/match-repository"
-import type { MatchFilters, MatchPage } from "../types/match"
+import type { MatchFilters } from "../types/match"
 import { toQuery } from "../utils/match-filters"
-
-type Result = { key: string; page: MatchPage } | { key: string; failed: true }
 
 export function useMatches(filters: MatchFilters) {
   const key = toQuery(filters).toString()
-  const [result, setResult] = useState<Result | null>(null)
+  const query = useQuery({
+    queryKey: matchKeys.list(key),
+    queryFn: ({ signal }) => listMatches(new URLSearchParams(key), signal),
+    placeholderData: keepPreviousData,
+  })
+  const refetch = () => void query.refetch()
 
-  useEffect(() => {
-    const controller = new AbortController()
-    listMatches(new URLSearchParams(key), controller.signal).then(
-      (page) => setResult({ key, page }),
-      () => {
-        if (!controller.signal.aborted) setResult({ key, failed: true })
-      },
-    )
-    return () => controller.abort()
-  }, [key])
-
-  if (result?.key !== key) return { status: "loading" } as const
-  if ("failed" in result) return { status: "error" } as const
-  return { status: "success", page: result.page } as const
+  if (!query.data) {
+    return query.isError ? ({ status: "error", refetch } as const) : ({ status: "loading" } as const)
+  }
+  return { status: "success", page: query.data, stale: query.isPlaceholderData } as const
 }
