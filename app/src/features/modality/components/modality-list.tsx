@@ -1,7 +1,7 @@
 "use client"
 
 import { EmptyState, ErrorState, GridSkeleton } from "@/shared/components/request-states"
-import { useModalities } from "../hooks/use-modalities"
+import { useModalities } from "@/features/modality"
 import { ModalityCard } from "./modality-card"
 
 export const MODALITIES_LOADING_LABEL = "Carregando modalidades…"
@@ -9,13 +9,13 @@ export const MODALITIES_LOADING_LABEL = "Carregando modalidades…"
 export function ModalityList({ seasonId }: { seasonId?: string }) {
     const modalities = useModalities(seasonId)
 
-    if (modalities.status === "loading") return <GridSkeleton label={MODALITIES_LOADING_LABEL} />
-    if (modalities.status === "error") {
+    if (modalities.isPending) return <GridSkeleton label={MODALITIES_LOADING_LABEL} />
+    if (modalities.isError) {
         return (
             <ErrorState
                 title="Não foi possível carregar as modalidades."
                 description="Verifique sua conexão e tente novamente."
-                onRetry={modalities.retry}
+                onRetry={() => modalities.refetch()}
             />
         )
     }

@@ -7,9 +7,9 @@ import { MODALITIES_LOADING_LABEL, ModalityList } from "./modality-list"
 
 export function ModalityListView() {
     const season = useActiveSeason()
-    if (season.status === "loading") return <GridSkeleton label={MODALITIES_LOADING_LABEL} />
+    if (season.isPending) return <GridSkeleton label={MODALITIES_LOADING_LABEL} />
 
-    const active = season.status === "success" ? season.season : null
+    const active = season.data ?? null
 
     return (
         <div className="space-y-4">
