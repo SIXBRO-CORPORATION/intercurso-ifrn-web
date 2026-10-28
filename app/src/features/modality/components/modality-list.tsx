@@ -1,35 +1,35 @@
 "use client"
 
+import { EmptyState, ErrorState, GridSkeleton } from "@/shared/components/request-states"
 import { useModalities } from "../hooks/use-modalities"
 import { ModalityCard } from "./modality-card"
-import { ModalityListLoading, ModalityMessage } from "./modality-list-states"
+
+export const MODALITIES_LOADING_LABEL = "Carregando modalidades…"
 
 export function ModalityList({ seasonId }: { seasonId?: string }) {
-  const modalities = useModalities(seasonId)
+    const modalities = useModalities(seasonId)
 
-  if (modalities.status === "loading") return <ModalityListLoading />
-  if (modalities.status === "error") {
-    return (
-        <ModalityMessage alert title="Não foi possível carregar as modalidades." onRetry={modalities.retry}>
-          Verifique sua conexão e tente novamente.
-        </ModalityMessage>
-    )
-  }
-  if (modalities.data.length === 0) {
-    return (
-        <ModalityMessage title="Nenhuma modalidade ativa.">
-          Ainda não há modalidades abertas para esta temporada.
-        </ModalityMessage>
-    )
-  }
+    if (modalities.status === "loading") return <GridSkeleton label={MODALITIES_LOADING_LABEL} />
+    if (modalities.status === "error") {
+        return (
+            <ErrorState
+                title="Não foi possível carregar as modalidades."
+                description="Verifique sua conexão e tente novamente."
+                onRetry={modalities.retry}
+            />
+        )
+    }
+    if (modalities.data.length === 0) {
+        return <EmptyState title="Nenhuma modalidade ativa." description="Ainda não há modalidades abertas para esta temporada." />
+    }
 
-  return (
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {modalities.data.map((modality) => (
-            <li key={modality.modality_id}>
-              <ModalityCard modality={modality} />
-            </li>
-        ))}
-      </ul>
-  )
+    return (
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {modalities.data.map((modality) => (
+                <li key={modality.modality_id}>
+                    <ModalityCard modality={modality} />
+                </li>
+            ))}
+        </ul>
+    )
 }

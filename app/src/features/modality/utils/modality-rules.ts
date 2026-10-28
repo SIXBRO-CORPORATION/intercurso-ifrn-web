@@ -28,14 +28,3 @@ export function getGenderRequirements({ gender_mode, min_male_members, min_femal
   }
   return requirements
 }
-
-export function getTeamCountLabel(members: number, max: number | null | undefined) {
-  const label = members === 1 ? "integrante" : "integrantes"
-  return max ? `${members}/${max} ${label}` : `${members} ${label}`
-}
-
-export function resolvePhotoSrc(photo: string | null | undefined) {
-  const value = photo?.trim()
-  if (!value) return null
-  return /^(https?:\/\/|\/)/.test(value) ? value : null
-}

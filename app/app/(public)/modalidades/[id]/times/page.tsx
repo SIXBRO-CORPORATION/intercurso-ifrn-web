@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { AuthGuard } from "@/features/auth/components/auth-guard"
-import { ModalityBackButton } from "@/features/modality/components/modality-back-button"
-import { ModalityTeamsView } from "@/features/modality/components/modality-teams-view"
+import { TeamListView } from "@/features/team/components/team-list-view"
+import { BackButton } from "@/shared/components/back-button"
 
 export const metadata: Metadata = { title: "Times da modalidade | Intercurso IFRN" }
 
@@ -9,9 +9,9 @@ export default async function ModalityTeamsPage({ params }: { params: Promise<{ 
     const { id } = await params
     return (
         <main className="mx-auto w-full max-w-5xl space-y-6 p-6 md:p-10">
-            <ModalityBackButton fallbackHref="/modalidades" />
+            <BackButton href="/modalidades" />
             <AuthGuard>
-                <ModalityTeamsView modalityId={id} />
+                <TeamListView modalityId={id} />
             </AuthGuard>
         </main>
     )

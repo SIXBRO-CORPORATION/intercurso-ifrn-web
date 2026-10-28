@@ -1,0 +1,8 @@
+import * as React from "react"
+import { cn } from "cn"
+
+function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
+    return <div data-slot="skeleton" className={cn("rounded-md bg-border/60 motion-safe:animate-pulse", className)} {...props} />
+}
+
+export { Skeleton }
