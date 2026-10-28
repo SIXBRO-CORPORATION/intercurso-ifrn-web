@@ -61,12 +61,14 @@ function MyTeams({ seasonId, registration }: { seasonId?: string; registration: 
                 )}
             </div>
             <RegistrationBanner state={registration} />
-            {teams.status === "loading" && <GridSkeleton label={LOADING_LABEL} />}
-            {teams.status === "error" && (
+
+            {teams.isPending && <GridSkeleton label={LOADING_LABEL} />}
+
+            {teams.isError && (
                 <ErrorState
                     title="Não foi possível carregar suas equipes."
                     description="Verifique sua conexão e tente novamente."
-                    onRetry={teams.retry}
+                    onRetry={() => teams.refetch()}
                 />
             )}
             {teams.status === "success" && teams.data.length === 0 && (
@@ -102,11 +104,25 @@ function MyTeams({ seasonId, registration }: { seasonId?: string; registration: 
     )
 }
 
+
+
 export function MyTeamsView() {
     const season = useActiveSeason()
-    if (season.status === "loading") return <GridSkeleton label={LOADING_LABEL} />
 
-    if (season.status === "error") return <MyTeams registration={SEASON_ERROR} />
+    if (season.isPending) {
+        return <GridSkeleton label={LOADING_LABEL} />
+    }
 
-    return <MyTeams seasonId={season.season?.season_id} registration={getRegistrationState(season.season, new Date())} />
+    if (season.isError) {
+        return <MyTeams registration={SEASON_ERROR} />
+    }
+
+    const activeSeason = season.data
+
+    return (
+        <MyTeams
+            seasonId={activeSeason?.season_id}
+            registration={getRegistrationState(activeSeason, new Date())}
+        />
+    )
 }
