@@ -61,7 +61,9 @@ function MyTeams({ seasonId, registration }: { seasonId?: string; registration: 
                 )}
             </div>
             <RegistrationBanner state={registration} />
-            {teams.status === "loading" && <GridSkeleton label={LOADING_LABEL} />}
+            {teams.status === "loading" && (
+                <GridSkeleton label={LOADING_LABEL} />
+            )}
             {teams.status === "error" && (
                 <ErrorState
                     title="Não foi possível carregar suas equipes."
@@ -102,11 +104,22 @@ function MyTeams({ seasonId, registration }: { seasonId?: string; registration: 
     )
 }
 
+
 export function MyTeamsView() {
     const season = useActiveSeason()
-    if (season.status === "loading") return <GridSkeleton label={LOADING_LABEL} />
 
-    if (season.status === "error") return <MyTeams registration={SEASON_ERROR} />
+    if (season.status === "loading") {
+        return <GridSkeleton label={LOADING_LABEL} />
+    }
 
-    return <MyTeams seasonId={season.season?.season_id} registration={getRegistrationState(season.season, new Date())} />
+    if (season.status === "error") {
+        return <MyTeams registration={SEASON_ERROR} />
+    }
+
+    return (
+        <MyTeams
+            seasonId={season.season?.season_id}
+            registration={getRegistrationState(season.season, new Date())}
+        />
+    )
 }
