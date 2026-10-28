@@ -2,7 +2,6 @@ import { AxiosError, type InternalAxiosRequestConfig } from "axios"
 import { beforeEach, describe, expect, it } from "vitest"
 import { api } from "@/lib/axios"
 import { listModalities } from "./modality-repository"
-import { listModalityTeams } from "./modality-teams-repository"
 
 const modality = {
   modality_id: "m1",
@@ -33,12 +32,12 @@ beforeEach(() => {
 })
 
 describe("listModalities", () => {
-  it("envia a temporada e devolve só modalidades ativas", async () => {
-    reply = { data: [modality, { ...modality, modality_id: "m2", active: false }] }
+  it("envia a temporada e devolve as modalidades como a API entrega", async () => {
+    reply = { data: [modality, { ...modality, modality_id: "m2", name: "Vôlei" }] }
     const result = await listModalities("s1", signal)
     expect(calls[0].url).toBe("/api/modality/")
     expect(calls[0].params).toEqual({ season_id: "s1" })
-    expect(result.map((item) => item.modality_id)).toEqual(["m1"])
+    expect(result.map((item) => item.modality_id)).toEqual(["m1", "m2"])
   })
 
   it("não envia query sem temporada e aceita data nulo", async () => {
@@ -55,23 +54,5 @@ describe("listModalities", () => {
   it("repassa erros de rede/HTTP", async () => {
     status = 500
     await expect(listModalities(undefined, signal)).rejects.toThrow()
-  })
-})
-
-describe("listModalityTeams", () => {
-  const team = { team_id: "t1", name: "Info", modality_id: "m1", photo: null, members_count: 7, max_members: 10 }
-
-  it("filtra por modalidade, temporada e status aprovado", async () => {
-    reply = { data: [team] }
-    const result = await listModalityTeams("m1", "s1", signal)
-    expect(calls[0].url).toBe("/api/team/")
-    expect(calls[0].params).toEqual({ modality_id: "m1", status: "APPROVED", season_id: "s1" })
-    expect(result[0].name).toBe("Info")
-  })
-
-  it("normaliza contagem ausente para zero", async () => {
-    reply = { data: [{ ...team, members_count: null }] }
-    expect((await listModalityTeams("m1", undefined, signal))[0].members_count).toBe(0)
-    expect(calls[0].params).toEqual({ modality_id: "m1", status: "APPROVED" })
   })
 })

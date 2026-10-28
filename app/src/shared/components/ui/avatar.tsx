@@ -1,8 +1,9 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
+import { Avatar as AvatarPrimitive } from "radix-ui"
 
-const avatarVariants = cva("inline-grid shrink-0 place-items-center rounded-full font-bold uppercase", {
+const avatarVariants = cva("relative inline-grid shrink-0 place-items-center overflow-hidden rounded-full font-bold uppercase", {
   variants: {
     tone: {
       success: "bg-primary-soft text-primary-dark",
@@ -23,18 +24,32 @@ const avatarVariants = cva("inline-grid shrink-0 place-items-center rounded-full
   },
 })
 
-function Avatar({
-  name,
-  tone,
-  size,
-  className,
-  ...props
-}: Omit<React.ComponentProps<"span">, "children"> & VariantProps<typeof avatarVariants> & { name?: string }) {
+type AvatarProps = React.ComponentProps<typeof AvatarPrimitive.Root> &
+    VariantProps<typeof avatarVariants> & {
+  /** Atalho: inicial do nome como fallback e, se houver `src`, a imagem por cima. */
+  name?: string
+  src?: string | null
+}
+
+function Avatar({ name, src, tone, size, className, children, ...props }: AvatarProps) {
   return (
-    <span aria-hidden data-slot="avatar" className={cn(avatarVariants({ tone, size }), className)} {...props}>
-      {name?.trim().charAt(0) || "?"}
-    </span>
+      <AvatarPrimitive.Root aria-hidden data-slot="avatar" className={cn(avatarVariants({ tone, size }), className)} {...props}>
+        {children ?? (
+            <>
+              {src && <AvatarImage src={src} />}
+              <AvatarFallback>{name?.trim().charAt(0) || "?"}</AvatarFallback>
+            </>
+        )}
+      </AvatarPrimitive.Root>
   )
 }
 
-export { Avatar, avatarVariants }
+function AvatarImage({ className, alt = "", ...props }: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+  return <AvatarPrimitive.Image data-slot="avatar-image" alt={alt} className={cn("aspect-square size-full object-cover", className)} {...props} />
+}
+
+function AvatarFallback({ className, ...props }: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+  return <AvatarPrimitive.Fallback data-slot="avatar-fallback" className={cn("grid size-full place-items-center", className)} {...props} />
+}
+
+export { Avatar, AvatarImage, AvatarFallback, avatarVariants }

@@ -7,5 +7,5 @@ export async function listModalities(seasonId: string | undefined, signal: Abort
     params: seasonId ? { season_id: seasonId } : undefined,
     signal,
   })
-  return (modalityListSchema.parse(data).data ?? []).filter((modality) => modality.active)
+  return modalityListSchema.parse(data).data ?? []
 }
