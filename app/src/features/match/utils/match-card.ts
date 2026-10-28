@@ -1,14 +1,14 @@
+import { format, isValid, parseISO } from "date-fns"
+import { ptBR } from "date-fns/locale"
 import type { Match } from "../types/match"
 
 const dateOnly = /^\d{4}-\d{2}-\d{2}$/
-const dateTime = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" })
-const dateAlone = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeZone: "UTC" })
 
 export function formatScheduledDate(iso: string | null) {
   if (!iso) return null
-  const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) return null
-  return (dateOnly.test(iso) ? dateAlone : dateTime).format(date)
+  const date = parseISO(iso)
+  if (!isValid(date)) return null
+  return format(date, dateOnly.test(iso) ? "P" : "Pp", { locale: ptBR })
 }
 
 export function periodLabel(period: number | null) {
