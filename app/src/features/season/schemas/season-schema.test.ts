@@ -5,7 +5,7 @@ const season = { season_id: "s1", name: "Intercurso 2026", year: 2026, status: "
 
 describe("activeSeasonSchema", () => {
   it("aceita a temporada e ignora campos extras", () => {
-    expect(activeSeasonSchema.parse({ success_bool: true, data: { ...season, registration_start_date: "x" } }).data).toEqual(season)
+    expect(activeSeasonSchema.parse({ success_bool: true, data: { ...season, extra: "x" } }).data).toEqual(season)
   })
 
   it("aceita a temporada de fallback, que não está mais ativa", () => {
