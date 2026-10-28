@@ -1,7 +1,7 @@
 "use client"
 
 import { EmptyState, ErrorState, GridSkeleton } from "@/shared/components/request-states"
-import { useModalities } from "@/features/modality"
+import { useModalities } from "../hooks/use-modalities"
 import { ModalityCard } from "./modality-card"
 
 export const MODALITIES_LOADING_LABEL = "Carregando modalidades…"
