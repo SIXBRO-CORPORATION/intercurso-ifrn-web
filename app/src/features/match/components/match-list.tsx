@@ -27,17 +27,17 @@ export function MatchList({ seasonId }: { seasonId: string }) {
   return (
     <div className="space-y-6">
       <MatchFiltersBar filters={filters} onChange={update} />
-      {result.status === "loading" && <MatchListLoading />}
-      {result.status === "error" && (
+      {result.isPending && <MatchListLoading />}
+      {result.isError && (
         <MatchListMessage alert title="Não foi possível carregar as partidas.">
-          <Button variant="danger" onClick={() => window.location.reload()}>Tentar novamente</Button>
+          <Button variant="danger" onClick={() => result.refetch()}>Tentar novamente</Button>
         </MatchListMessage>
       )}
-      {result.status === "success" && (
+      {result.isSuccess && (
         <>
-          {result.page.items.length ? (
+          {result.data.items.length ? (
             <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {result.page.items.map((m, i) => (
+              {result.data.items.map((m, i) => (
                 <RevealItem key={m.match_id} index={i}>
                   <MatchCard match={m} />
                 </RevealItem>
@@ -46,8 +46,8 @@ export function MatchList({ seasonId }: { seasonId: string }) {
           ) : (
             <MatchListMessage title="Nenhuma partida encontrada.">Ajuste ou limpe os filtros para ver mais jogos.</MatchListMessage>
           )}
-          {result.page.total > 0 && (
-            <MatchPagination page={result.page.page} size={result.page.size} total={result.page.total} onPage={(page) => update({ page })} />
+          {result.data.total > 0 && (
+            <MatchPagination page={result.data.page} size={result.data.size} total={result.data.total} onPage={(page) => update({ page })} />
           )}
         </>
       )}
