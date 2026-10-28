@@ -5,7 +5,6 @@ import { cn } from "cn"
 import { Button } from "@/shared/components/ui/button"
 
 type BackButtonProps = {
-    /** Destino fixo: não depende do histórico do navegador. */
     href: string
     children?: ReactNode
     className?: string
