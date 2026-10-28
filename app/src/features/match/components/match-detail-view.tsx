@@ -10,26 +10,26 @@ import { MatchTimeline } from "./match-timeline"
 export function MatchDetailView({ id }: { id: string }) {
   const result = useMatch(id)
 
-  if (result.status === "loading") {
+  if (result.isPending) {
     return (
       <div role="status" aria-busy="true" className="h-56 rounded-xl bg-border/60 motion-safe:animate-pulse">
         <span className="sr-only">Carregando partida…</span>
       </div>
     )
   }
-  if (result.status === "not-found") return <MatchListMessage title="Partida não encontrada." />
-  if (result.status === "error") {
+  if (result.isError) {
     return (
       <MatchListMessage alert title="Não foi possível carregar a partida.">
-        <Button variant="danger" onClick={result.refetch}>Tentar novamente</Button>
+        <Button variant="danger" onClick={() => result.refetch()}>Tentar novamente</Button>
       </MatchListMessage>
     )
   }
+  if (!result.data) return <MatchListMessage title="Partida não encontrada." />
   return (
     <div className="space-y-8">
-      <MatchHeader match={result.match} />
-      <MatchTimeline match={result.match} />
-      <MatchRoster match={result.match} />
+      <MatchHeader match={result.data} />
+      <MatchTimeline match={result.data} />
+      <MatchRoster match={result.data} />
     </div>
   )
 }
