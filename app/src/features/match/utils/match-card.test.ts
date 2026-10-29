@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { formatClock, formatScheduledDate, periodLabel, phaseLabel } from "./match-card"
+import { formatClock, formatScheduledDate, formatScheduledSlot, periodLabel, phaseLabel, roundLabel, stageLabel } from "./match-card"
 
 describe("formatScheduledDate", () => {
   it("devolve null sem data ou com data inválida", () => {
@@ -38,5 +38,34 @@ describe("formatClock", () => {
     expect(formatClock(5)).toBe("00:05")
     expect(formatClock(null)).toBe("00:00")
     expect(formatClock(-3)).toBe("00:00")
+  })
+})
+
+describe("formatScheduledSlot", () => {
+  it("devolve null sem data ou com data inválida", () => {
+    expect(formatScheduledSlot(null)).toBeNull()
+    expect(formatScheduledSlot("não é data")).toBeNull()
+  })
+
+  it("separa dia e hora", () => {
+    expect(formatScheduledSlot("2026-10-20T15:30:00")).toEqual({ date: "20/10", time: "15:30" })
+  })
+
+  it("omite a hora quando vem só a data", () => {
+    expect(formatScheduledSlot("2026-10-20")).toEqual({ date: "20/10", time: null })
+  })
+})
+
+describe("roundLabel e stageLabel", () => {
+  it("traduz tipos especiais e ignora partidas regulares", () => {
+    expect(roundLabel({ match_type: "SEMIFINAL" })).toBe("Semifinal")
+    expect(roundLabel({ match_type: "REGULAR" })).toBeNull()
+    expect(roundLabel({ match_type: null })).toBeNull()
+  })
+
+  it("prefere o grupo e cai para a categoria", () => {
+    expect(stageLabel({ group_name: "Grupo B", match_category: "GROUP" })).toBe("Grupo B")
+    expect(stageLabel({ group_name: null, match_category: "KNOCKOUT" })).toBe("Mata-mata")
+    expect(stageLabel({ group_name: null, match_category: null })).toBeNull()
   })
 })
