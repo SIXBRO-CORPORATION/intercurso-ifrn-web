@@ -3,6 +3,7 @@ import type { MatchStatus } from "../types/match"
 
 export const PAGE_SIZE = 12
 export const MAX_PAGE_SIZE = 100
+export const MANAGE_PATH = "/dashboard/partidas/gerenciar"
 
 export const STATUS_OPTIONS: { value: MatchStatus; label: string }[] = [
   { value: "SCHEDULED", label: "Agendado" },

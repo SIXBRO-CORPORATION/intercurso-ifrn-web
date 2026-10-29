@@ -19,6 +19,10 @@ export function phaseLabel(match: Pick<Match, "group_name" | "match_type">) {
   return match.group_name ?? match.match_type
 }
 
+export function teamsLabel(match: Pick<Match, "team1" | "team2">) {
+  return `${match.team1?.name ?? "A definir"} × ${match.team2?.name ?? "A definir"}`
+}
+
 export function isVolleyMatch(match: Pick<Match, "team1">) {
   return match.team1?.sets_won != null
 }
