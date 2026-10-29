@@ -4,15 +4,16 @@ import { useState } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useModalities } from "@/features/modality"
 import { ErrorState, EmptyState } from "@/shared/components/request-states"
-import { RevealItem } from "@/shared/components/reveal-item"
+import { Badge } from "@/shared/components/ui/badge"
 import { MAX_PAGE_SIZE } from "../constants"
 import { useMatches } from "../hooks/use-matches"
+import { useMatchesLive } from "../hooks/use-matches-live"
 import type { Match, MatchFilters } from "../types/match"
 import { parseFilters, toQuery, withFilters } from "../utils/match-filters"
 import { MatchListLoading } from "./match-list-states"
 import { MatchPagination } from "./match-pagination"
 import { MonitorMatchFilters } from "./monitor-match-filters"
-import { LiveMatchRow, ScheduledMatchRow } from "./monitor-match-row"
+import { LiveMatchTable, ScheduledMatchTable } from "./monitor-match-row"
 import { StartMatchDialog } from "./start-match-dialog"
 
 export function MonitorMatchList({ seasonId }: { seasonId: string }) {
@@ -27,6 +28,7 @@ export function MonitorMatchList({ seasonId }: { seasonId: string }) {
   const scheduled = useMatches(filters)
   const live = useMatches(liveFilters)
   const modalities = useModalities(seasonId)
+  useMatchesLive(seasonId)
 
   function update(patch: Partial<MatchFilters>) {
     const query = toQuery({ ...withFilters(filters, patch), season_id: "", status: "" }, true).toString()
@@ -43,33 +45,24 @@ export function MonitorMatchList({ seasonId }: { seasonId: string }) {
           <h2 id="live-title" className="type-section text-ink">
             Em andamento
           </h2>
-          <ul className="space-y-3">
-            {liveItems.map((m) => (
-              <RevealItem key={m.match_id}>
-                <LiveMatchRow match={m} />
-              </RevealItem>
-            ))}
-          </ul>
+          <LiveMatchTable matches={liveItems} />
         </section>
       )}
 
       <section aria-labelledby="scheduled-title" className="space-y-4">
-        <h2 id="scheduled-title" className="type-section text-ink">
-          Agendadas
-        </h2>
+        <div className="border-b border-border">
+          <h2 id="scheduled-title" className="type-label -mb-px inline-flex items-center gap-2 border-b-2 border-primary pb-3 text-primary-dark">
+            Agendadas
+            {scheduled.isSuccess && <Badge variant="success">{scheduled.data.total}</Badge>}
+          </h2>
+        </div>
         <MonitorMatchFilters filters={filters} modalities={modalities.data ?? []} onChange={update} />
         {scheduled.isPending && <MatchListLoading />}
         {scheduled.isError && <ErrorState title="Não foi possível carregar as partidas." onRetry={() => scheduled.refetch()} />}
         {scheduled.isSuccess && (
           <>
             {scheduled.data.items.length ? (
-              <ul className="space-y-3">
-                {scheduled.data.items.map((m, i) => (
-                  <RevealItem key={m.match_id} index={i}>
-                    <ScheduledMatchRow match={m} onStart={setStarting} />
-                  </RevealItem>
-                ))}
-              </ul>
+              <ScheduledMatchTable matches={scheduled.data.items} onStart={setStarting} />
             ) : (
               <EmptyState title="Nenhuma partida agendada." description="Ajuste ou limpe os filtros para ver mais jogos." />
             )}

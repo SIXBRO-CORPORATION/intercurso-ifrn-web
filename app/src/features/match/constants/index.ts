@@ -3,6 +3,17 @@ import type { MatchStatus } from "../types/match"
 
 export const PAGE_SIZE = 12
 export const MAX_PAGE_SIZE = 100
+export const MATCH_EVENT_NAMES = [
+  "match_started",
+  "score_update",
+  "clock_update",
+  "card_issued",
+  "period_started",
+  "period_ended",
+  "set_finished",
+  "event_deleted",
+  "match_finished",
+]
 export const MANAGE_PATH = "/dashboard/partidas/gerenciar"
 
 export const STATUS_OPTIONS: { value: MatchStatus; label: string }[] = [
