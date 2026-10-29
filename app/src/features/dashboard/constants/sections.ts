@@ -86,7 +86,7 @@ export const SECTIONS: Section[] = [
     icon: Shield,
     summary: "Mesa de controle dos jogos.",
     features: [
-      { name: "Iniciar partida", description: "Muda o jogo para em andamento e dispara o cronômetro.", role: "MONITOR", uc: "UC013" },
+      { name: "Iniciar partida", description: "Muda o jogo para em andamento e dispara o cronômetro.", role: "MONITOR", uc: "UC013", href: "/dashboard/partidas/gerenciar" },
       { name: "Registrar evento", description: "Gol, ponto, cartão amarelo ou vermelho, expulsão, pênalti, fim de set.", role: "MONITOR", uc: "UC014" },
       { name: "Cronômetro e períodos", description: "Iniciar, pausar e encerrar períodos.", role: "MONITOR", uc: "UC014" },
       { name: "Corrigir evento", description: "Editar ou desfazer um evento lançado errado.", role: "MONITOR", uc: "UC017" },

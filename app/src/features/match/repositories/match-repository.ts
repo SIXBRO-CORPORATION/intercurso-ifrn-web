@@ -8,6 +8,10 @@ export async function listMatches(query: URLSearchParams, signal: AbortSignal) {
   return matchListSchema.parse(data).data
 }
 
+export async function startMatch(id: string) {
+  await api.post(`${MATCH_API}${encodeURIComponent(id)}/start`)
+}
+
 export async function getMatch(id: string, signal: AbortSignal) {
   try {
     const { data } = await api.get(`${MATCH_API}${encodeURIComponent(id)}`, { signal })
