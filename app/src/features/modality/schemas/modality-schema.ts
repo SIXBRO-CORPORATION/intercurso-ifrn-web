@@ -13,6 +13,9 @@ export const modalitySchema = z.object({
   min_female_members: z.number().int().nullish(),
   active: z.boolean(),
   photo: z.string().nullish(),
+  num_periods: z.number().int().nullish(),
+  period_durations_minutes: z.number().nullish(),
+  score_type: z.string().nullish(),
 })
 
 export const modalityListSchema = envelopeSchema(z.array(modalitySchema).nullable())

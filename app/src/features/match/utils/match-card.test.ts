@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { formatClock, formatScheduledDate, formatScheduledSlot, periodLabel, phaseLabel, roundLabel, stageLabel } from "./match-card"
+import { clockLimit, formatClock, formatScheduledDate, formatScheduledSlot, periodLabel, phaseLabel, roundLabel, stageLabel } from "./match-card"
 
 describe("formatScheduledDate", () => {
   it("devolve null sem data ou com data inválida", () => {
@@ -67,5 +67,20 @@ describe("roundLabel e stageLabel", () => {
     expect(stageLabel({ group_name: "Grupo B", match_category: "GROUP" })).toBe("Grupo B")
     expect(stageLabel({ group_name: null, match_category: "KNOCKOUT" })).toBe("Mata-mata")
     expect(stageLabel({ group_name: null, match_category: null })).toBeNull()
+  })
+})
+
+describe("clockLimit", () => {
+  const futsal = { score_type: "GOALS", period_durations_minutes: 20 }
+
+  it("acumula a duração dos períodos já iniciados", () => {
+    expect(clockLimit(futsal, 1)).toBe(1200)
+    expect(clockLimit(futsal, 2)).toBe(2400)
+    expect(clockLimit(futsal, null)).toBe(1200)
+  })
+
+  it("não limita vôlei nem modalidade desconhecida", () => {
+    expect(clockLimit({ score_type: "SETS", period_durations_minutes: 90 }, 1)).toBeNull()
+    expect(clockLimit(undefined, 1)).toBeNull()
   })
 })

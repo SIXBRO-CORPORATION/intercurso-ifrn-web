@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { parseFilters, toQuery, withFilters } from "./match-filters"
+import { parseFilters, toApiQuery, toQuery, withFilters } from "./match-filters"
 
 describe("match filters", () => {
   it("aplica padrões e descarta valores inválidos", () => {
@@ -21,5 +21,18 @@ describe("match filters", () => {
     const f = parseFilters(new URLSearchParams("page=4"))
     expect(withFilters(f, { status: "FINISHED" })).toMatchObject({ status: "FINISHED", page: 1 })
     expect(withFilters(f, { page: 5 }).page).toBe(5)
+  })
+
+  it("converte o intervalo de datas para o dia local inteiro", () => {
+    const q = toApiQuery(new URLSearchParams("date_from=2026-10-23&date_to=2026-10-24&status=FINISHED"))
+    const from = new Date(q.get("date_from")!)
+    const to = new Date(q.get("date_to")!)
+    expect([from.getDate(), from.getHours(), from.getMinutes()]).toEqual([23, 0, 0])
+    expect([to.getDate(), to.getHours(), to.getMinutes(), to.getSeconds()]).toEqual([24, 23, 59, 59])
+    expect(q.get("status")).toBe("FINISHED")
+  })
+
+  it("mantém a query intacta sem datas válidas", () => {
+    expect(toApiQuery(new URLSearchParams("date_to=xx&page=2")).toString()).toBe("date_to=xx&page=2")
   })
 })

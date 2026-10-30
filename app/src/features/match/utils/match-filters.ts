@@ -1,3 +1,4 @@
+import { endOfDay, isValid, parseISO, startOfDay } from "date-fns"
 import { MAX_PAGE_SIZE, PAGE_SIZE, STATUS_OPTIONS } from "../constants"
 import type { MatchFilters, MatchStatus } from "../types/match"
 
@@ -32,4 +33,18 @@ export function toQuery(filters: MatchFilters, compact = false) {
 // Qualquer mudança de filtro volta para a página 1; só `page` no patch a sobrescreve.
 export function withFilters(filters: MatchFilters, patch: Partial<MatchFilters>): MatchFilters {
   return { ...filters, page: 1, ...patch }
+}
+
+function boundary(value: string | null, edge: (date: Date) => Date) {
+  const date = value ? parseISO(value) : null
+  return date && isValid(date) ? edge(date).toISOString() : null
+}
+
+export function toApiQuery(query: URLSearchParams) {
+  const next = new URLSearchParams(query)
+  const from = boundary(query.get("date_from"), startOfDay)
+  const to = boundary(query.get("date_to"), endOfDay)
+  if (from) next.set("date_from", from)
+  if (to) next.set("date_to", to)
+  return next
 }
