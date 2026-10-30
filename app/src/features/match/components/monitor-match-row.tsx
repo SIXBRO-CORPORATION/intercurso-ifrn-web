@@ -1,5 +1,6 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
+import type { Modality } from "@/features/modality"
 import { cn } from "@/lib/utils"
 import { LiveDot } from "@/shared/components/live-dot"
 import { Badge } from "@/shared/components/ui/badge"
@@ -7,7 +8,7 @@ import { Button } from "@/shared/components/ui/button"
 import { Card } from "@/shared/components/ui/card"
 import { MANAGE_PATH } from "../constants"
 import type { Match, MatchTeam } from "../types/match"
-import { formatScheduledSlot, periodLabel, roundLabel, stageLabel, teamsLabel } from "../utils/match-card"
+import { clockLimit, formatScheduledSlot, isVolleyMatch, periodLabel, roundLabel, stageLabel, teamsLabel } from "../utils/match-card"
 import { LiveClock } from "./live-clock"
 
 const th = "type-overline px-5 py-3 text-left font-bold text-muted-foreground"
@@ -88,7 +89,7 @@ export function ScheduledMatchTable({ matches, onStart }: { matches: Match[]; on
 
 const score = (team: MatchTeam | null) => (team ? team.score : "–")
 
-export function LiveMatchTable({ matches }: { matches: Match[] }) {
+export function LiveMatchTable({ matches, modalities }: { matches: Match[]; modalities: Modality[] }) {
   return (
     <MatchTable
       caption="Partidas em andamento"
@@ -96,7 +97,9 @@ export function LiveMatchTable({ matches }: { matches: Match[] }) {
       className="border-primary"
     >
       {matches.map((match) => {
-        const period = periodLabel(match.current_period)
+        const volley = isVolleyMatch(match)
+        const period = volley ? null : periodLabel(match.current_period)
+        const modality = modalities.find((m) => m.modality_id === match.modality_id)
         return (
           <tr key={match.match_id}>
             <MatchCell match={match} />
@@ -107,7 +110,14 @@ export function LiveMatchTable({ matches }: { matches: Match[] }) {
             </td>
             <td className={td}>
               <p className="type-body font-bold tabular-nums text-ink">
-                <LiveClock seconds={match.clock_seconds} running={match.clock_running} />
+                {volley ? (
+                  <>
+                    <span className="sr-only">Sets </span>
+                    {match.team1?.sets_won ?? 0} – {match.team2?.sets_won ?? 0}
+                  </>
+                ) : (
+                  <LiveClock seconds={match.clock_seconds} running={match.clock_running} limit={clockLimit(modality, match.current_period)} />
+                )}
               </p>
               {period && <p className="type-caption text-muted-foreground">{period}</p>}
             </td>
@@ -120,6 +130,47 @@ export function LiveMatchTable({ matches }: { matches: Match[] }) {
             <td className={cn(td, "text-right")}>
               <Button asChild size="sm" variant="outline">
                 <Link href={`${MANAGE_PATH}/${match.match_id}`}>Gerenciar</Link>
+              </Button>
+            </td>
+          </tr>
+        )
+      })}
+    </MatchTable>
+  )
+}
+
+const finalScore = (match: Match) =>
+  isVolleyMatch(match) ? `${match.team1?.sets_won ?? 0} – ${match.team2?.sets_won ?? 0}` : `${score(match.team1)} – ${score(match.team2)}`
+
+export function FinishedMatchTable({ matches }: { matches: Match[] }) {
+  return (
+    <MatchTable caption="Partidas encerradas" headers={["Data", "Partida", "Modalidade", "Fase", "Placar", "Status", ""]}>
+      {matches.map((match) => {
+        const slot = formatScheduledSlot(match.scheduled_date)
+        return (
+          <tr key={match.match_id}>
+            <td className={td}>
+              {slot ? (
+                <time dateTime={match.scheduled_date ?? undefined} className="block">
+                  <span className="type-body block font-bold text-ink">{slot.date}</span>
+                  {slot.time && <span className="type-caption text-muted-foreground">{slot.time}</span>}
+                </time>
+              ) : (
+                <span className="type-body-sm text-muted-foreground">–</span>
+              )}
+            </td>
+            <MatchCell match={match} />
+            <ContextCells match={match} />
+            <td className={cn(td, "type-section tabular-nums text-ink")}>
+              <span className="sr-only">Placar </span>
+              {finalScore(match)}
+            </td>
+            <td className={td}>
+              <Badge>Encerrada</Badge>
+            </td>
+            <td className={cn(td, "text-right")}>
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/partidas/${match.match_id}`}>Ver partida</Link>
               </Button>
             </td>
           </tr>
