@@ -8,6 +8,7 @@ export function useStartMatch() {
 
   return useMutation({
     mutationFn: startMatch,
+    onSuccess: (match, id) => queryClient.setQueryData(["match", id], match),
     onSettled: (_data, _error, id) =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: ["matches"] }),
