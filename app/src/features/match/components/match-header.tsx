@@ -2,7 +2,7 @@ import { LiveDot } from "@/shared/components/live-dot"
 import { Avatar } from "@/shared/components/ui/avatar"
 import { STATUS_OPTIONS } from "../constants"
 import type { MatchDetail, MatchTeam } from "../types/match"
-import { formatScheduledDate, isVolleyMatch, periodLabel, phaseLabel } from "../utils/match-card"
+import { clockLimit, formatScheduledDate, isVolleyMatch, periodLabel, phaseLabel } from "../utils/match-card"
 import { LiveClock } from "./live-clock"
 
 function Team({ team }: { team: MatchTeam | null }) {
@@ -23,6 +23,8 @@ export function MatchHeader({ match }: { match: MatchDetail }) {
   const main = (t: MatchTeam | null) => (t && status !== "SCHEDULED" ? ((volley && !live ? t.sets_won : t.score) ?? "–") : "–")
   const penalty = (t: MatchTeam | null) => shootout && <span className="text-2xl"> ({t?.penalty_score})</span>
 
+  const config = match.modality_configuration
+  const limit = config ? clockLimit({ score_type: config.score_type, period_durations_minutes: config.period_duration_minutes }, match.current_period) : null
   const phase = phaseLabel(match)
   const date = formatScheduledDate(match.scheduled_date)
   const period = !volley && live ? periodLabel(match.current_period) : null
@@ -39,7 +41,7 @@ export function MatchHeader({ match }: { match: MatchDetail }) {
         <span className="type-caption text-white/80">
           {period}
           {period && live && " · "}
-          {live && <LiveClock seconds={match.clock_seconds} running={match.clock_running} />}
+          {live && <LiveClock seconds={match.clock_seconds} running={match.clock_running} limit={limit} />}
         </span>
       </header>
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">

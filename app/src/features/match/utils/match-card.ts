@@ -63,6 +63,12 @@ export function formatClock(seconds: number | null) {
   return `${pad(Math.floor(total / 60))}:${pad(total % 60)}`
 }
 
+export function formatClockWithExtra(seconds: number | null, limit: number | null) {
+  const total = Math.max(0, Math.floor(seconds ?? 0))
+  if (limit == null || total <= limit) return { main: formatClock(total), extra: null }
+  return { main: formatClock(limit), extra: formatClock(total - limit) }
+}
+
 export function clockLimit(modality: Pick<Modality, "score_type" | "period_durations_minutes"> | undefined, period: number | null) {
   if (!modality?.period_durations_minutes || modality.score_type === "SETS") return null
   return modality.period_durations_minutes * 60 * Math.max(1, period ?? 1)
