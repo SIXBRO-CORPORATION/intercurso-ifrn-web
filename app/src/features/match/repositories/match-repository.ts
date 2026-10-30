@@ -2,9 +2,10 @@ import { isAxiosError } from "axios"
 import { MATCH_API } from "@/core/config/endpoints"
 import { api } from "@/lib/axios"
 import { matchDetailResponseSchema, matchListSchema } from "../schemas/match-schema"
+import { toApiQuery } from "../utils/match-filters"
 
 export async function listMatches(query: URLSearchParams, signal: AbortSignal) {
-  const { data } = await api.get(MATCH_API, { params: query, signal })
+  const { data } = await api.get(MATCH_API, { params: toApiQuery(query), signal })
   return matchListSchema.parse(data).data
 }
 

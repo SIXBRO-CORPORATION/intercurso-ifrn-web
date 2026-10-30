@@ -1,5 +1,6 @@
 import { format, isValid, parseISO } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import type { Modality } from "@/features/modality"
 import type { Match } from "../types/match"
 
 const dateOnly = /^\d{4}-\d{2}-\d{2}$/
@@ -60,4 +61,9 @@ export function formatClock(seconds: number | null) {
   const total = Math.max(0, Math.floor(seconds ?? 0))
   const pad = (n: number) => String(n).padStart(2, "0")
   return `${pad(Math.floor(total / 60))}:${pad(total % 60)}`
+}
+
+export function clockLimit(modality: Pick<Modality, "score_type" | "period_durations_minutes"> | undefined, period: number | null) {
+  if (!modality?.period_durations_minutes || modality.score_type === "SETS") return null
+  return modality.period_durations_minutes * 60 * Math.max(1, period ?? 1)
 }
