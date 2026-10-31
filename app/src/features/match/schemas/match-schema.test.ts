@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { matchDetailSchema, matchListSchema } from "./match-schema"
+import { matchDetailSchema, matchListSchema, matchLiveEventSchema } from "./match-schema"
 
 const team = { team_id: "t1", name: "Informática", photo: null, score: 2, sets_won: 0, penalty_score: 0 }
 
@@ -65,5 +65,19 @@ describe("matchDetailSchema", () => {
     })
     expect(detail.group_name).toBeNull()
     expect(detail.team1_players).toEqual([{ user_id: "p1", name: "Lucas Silva" }])
+  })
+})
+
+describe("matchLiveEventSchema", () => {
+  const snapshot = { ...match, sets: [], team1_players: [], team2_players: [], timeline: [], modality_configuration: { num_periods: 2, period_duration_minutes: 20, score_type: "GOALS" } }
+
+  it("extrai o snapshot do payload SSE e preserva a configuração da modalidade", () => {
+    const { match: parsed } = matchLiveEventSchema.parse({ match_id: "m1", event: "score_update", match: snapshot })
+    expect(parsed?.modality_configuration?.period_duration_minutes).toBe(20)
+  })
+
+  it("aceita snapshot nulo e rejeita snapshot inválido", () => {
+    expect(matchLiveEventSchema.parse({ match_id: "m1", event: "clock_update", match: null }).match).toBeNull()
+    expect(() => matchLiveEventSchema.parse({ match: { ...snapshot, status: "XYZ" } })).toThrow()
   })
 })

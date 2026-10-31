@@ -2,7 +2,7 @@ import { AxiosError, type InternalAxiosRequestConfig } from "axios"
 import { beforeEach, describe, expect, it } from "vitest"
 import { api } from "@/lib/axios"
 import { parseFilters, toQuery } from "../utils/match-filters"
-import { getMatch, listMatches } from "./match-repository"
+import { getMatch, listMatches, startMatch } from "./match-repository"
 
 const match = {
   match_id: "m1",
@@ -73,5 +73,21 @@ describe("getMatch", () => {
   it("repassa outros erros", async () => {
     status = 500
     await expect(getMatch("m1", signal)).rejects.toThrow()
+  })
+})
+
+describe("startMatch", () => {
+  it("faz POST em /start e devolve o estado de gestão validado", async () => {
+    reply = { data: { ...match, status: "IN_PROGRESS", sets: [], team1_players: [{ user_id: "p1", name: "Lucas", matricula: "123", role: "OWNER" }], team2_players: [], timeline: [] } }
+    const detail = await startMatch("m1")
+    expect(calls[0].method).toBe("post")
+    expect(calls[0].url).toBe("/api/match/m1/start")
+    expect(detail.status).toBe("IN_PROGRESS")
+    expect(detail.team1_players).toEqual([{ user_id: "p1", name: "Lucas" }])
+  })
+
+  it("repassa o erro do backend", async () => {
+    status = 400
+    await expect(startMatch("m1")).rejects.toThrow()
   })
 })

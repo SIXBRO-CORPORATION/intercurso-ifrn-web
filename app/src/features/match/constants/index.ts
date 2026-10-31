@@ -36,3 +36,5 @@ export const EVENT_TYPES: Record<string, { label: string; icon: LucideIcon; clas
   CARD_RED: { label: "Cartão vermelho", icon: Square, className: "fill-danger text-danger" },
   EXPULSION: { label: "Expulsão", icon: UserX, className: "text-danger" },
 }
+
+export const SCORE_TYPE_LABELS: Record<string, string> = { GOALS: "Gols", POINTS: "Pontos", SETS: "Sets" }

@@ -60,7 +60,15 @@ const matchEventSchema = z.object({
   player_id: z.string().nullish(),
 })
 
+const modalityConfigurationSchema = z.object({
+  num_periods: z.number().nullish(),
+  period_duration_minutes: z.number().nullish(),
+  score_type: z.string().nullish(),
+  sets_to_win: z.number().nullish(),
+})
+
 export const matchDetailSchema = matchSchema.extend({
+  modality_configuration: modalityConfigurationSchema.nullish(),
   sets: z.array(matchSetSchema),
   team1_players: z.array(matchPlayerSchema),
   team2_players: z.array(matchPlayerSchema),
@@ -68,5 +76,7 @@ export const matchDetailSchema = matchSchema.extend({
 })
 
 export const matchDetailResponseSchema = envelopeSchema(matchDetailSchema)
+
+export const matchLiveEventSchema = z.object({ match: matchDetailSchema.nullable() })
 
 export type MatchDetail = z.infer<typeof matchDetailSchema>
