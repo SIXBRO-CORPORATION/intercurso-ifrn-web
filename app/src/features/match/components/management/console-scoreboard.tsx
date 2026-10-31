@@ -1,19 +1,38 @@
-import { Play } from "lucide-react"
+import { Pause, Play } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { LiveDot } from "@/shared/components/live-dot"
 import { Button } from "@/shared/components/ui/button"
+import { useMatchAction } from "../../hooks/use-match-action"
 import type { MatchDetail, MatchTeam } from "../../types/match"
 import { isVolleyMatch, matchClockLimit, periodLabel } from "../../utils/match-card"
+import { parseMatchActionError } from "../../utils/match-action-error"
+import { hasNextPeriod, isPeriodEnded } from "../../utils/match-timeline"
 import { LiveClock } from "../live-clock"
 
-const ACTION = "type-label h-11 rounded-full bg-white/20 font-bold text-white/70"
+const ACTION =
+  "type-label h-11 rounded-full bg-white/20 font-bold text-white/70 transition-colors enabled:text-white enabled:hover:bg-white/30 disabled:cursor-default"
 
-export function ConsoleScoreboard({ match, onPlay }: { match: MatchDetail; onPlay: () => void }) {
+type Props = { match: MatchDetail; onPlay: () => void; onEndPeriod: () => void }
+
+export function ConsoleScoreboard({ match, onPlay, onEndPeriod }: Props) {
+  const action = useMatchAction(match.match_id)
   const { team1, team2, status } = match
   const volley = isVolleyMatch(match)
   const live = status === "IN_PROGRESS"
   const shootout = team1?.penalty_score != null && team2?.penalty_score != null
   const value = (t: MatchTeam | null) => (volley && status === "FINISHED" ? t?.sets_won : t?.score) ?? 0
-  const state = live ? (match.clock_running ? "Rodando" : "Pausado") : status === "FINISHED" ? "Encerrada" : "Aguardando início"
+  const ended = live && !volley && isPeriodEnded(match.timeline)
+  const noNextPeriod = !hasNextPeriod(match)
+  const locked = !live || ended || action.isPending
+  const state = ended
+    ? "Período encerrado"
+    : live
+      ? match.clock_running
+        ? "Rodando"
+        : "Pausado"
+      : status === "FINISHED"
+        ? "Encerrada"
+        : "Aguardando início"
 
   return (
     <section aria-label="Placar" className="space-y-5 rounded-xl bg-linear-to-b from-primary to-primary-dark p-5 text-white shadow-primary">
@@ -21,7 +40,7 @@ export function ConsoleScoreboard({ match, onPlay }: { match: MatchDetail; onPla
         <span className="type-overline text-white/80">{(!volley && live && periodLabel(match.current_period)) || "\u00a0"}</span>
         <span className="type-label inline-flex items-center gap-1.5 text-white/80">
           {state}
-          {live && <LiveDot className={match.clock_running ? "text-white" : "text-white/50"} />}
+          {live && (match.clock_running ? <LiveDot className="text-white" /> : <Pause className="size-3.5" aria-hidden />)}
         </span>
       </header>
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-center">
@@ -51,12 +70,39 @@ export function ConsoleScoreboard({ match, onPlay }: { match: MatchDetail; onPla
           <Play aria-hidden /> Play
         </Button>
       )}
+      {ended && (
+        <Button
+          variant="dark"
+          size="lg"
+          className="w-full"
+          disabled={action.isPending || noNextPeriod}
+          onClick={() => action.mutate("period/start")}
+        >
+          <Play aria-hidden /> {noNextPeriod ? "Todos os períodos disputados" : "Iniciar próximo período"}
+        </Button>
+      )}
       {status !== "FINISHED" && (
-        <div className="grid grid-cols-3 gap-2">
-          <button type="button" disabled className={ACTION}>{match.clock_running ? "Pausar" : "Retomar"}</button>
-          <button type="button" disabled className={ACTION}>Fim do período</button>
+        <div className={cn("grid gap-2", volley ? "grid-cols-2" : "grid-cols-3")}>
+          <button
+            type="button"
+            disabled={locked}
+            className={ACTION}
+            onClick={() => action.mutate(match.clock_running ? "clock/pause" : "clock/resume")}
+          >
+            {match.clock_running ? "Pausar" : "Retomar"}
+          </button>
+          {!volley && (
+            <button type="button" disabled={locked} className={ACTION} onClick={onEndPeriod}>
+              Fim do período
+            </button>
+          )}
           <button type="button" disabled className={ACTION}>Desfazer</button>
         </div>
+      )}
+      {action.isError && (
+        <p role="alert" className="type-caption rounded-lg bg-white/15 px-3 py-2 text-center">
+          {parseMatchActionError(action.error)}
+        </p>
       )}
     </section>
   )

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { matchDetailSchema } from "../schemas/match-schema"
-import { playerCards, timelineRows } from "./match-timeline"
+import { hasNextPeriod, isPeriodEnded, playerCards, timelineRows } from "./match-timeline"
 
 const base = {
   match_id: "m1", bracket_id: null, modality_id: "mod", modality_name: "Futsal", group_name: null,
@@ -65,5 +65,37 @@ describe("playerCards", () => {
     expect(cards.get("b")).toEqual({ yellow: 0, red: true })
     expect(cards.get("c")).toEqual({ yellow: 0, red: false })
     expect(cards.size).toBe(3)
+  })
+})
+
+describe("isPeriodEnded", () => {
+  const event = (event_type: string, i: number) => ({ event_id: `e${i}`, event_type, clock_seconds: i })
+
+  it("é verdadeiro quando o último marcador de período é o fim", () => {
+    expect(isPeriodEnded([event("MATCH_STARTED", 1), event("GOAL", 2), event("PERIOD_END", 3)])).toBe(true)
+  })
+
+  it("é falso com o período em andamento, mesmo com lances depois do início", () => {
+    expect(isPeriodEnded([event("MATCH_STARTED", 1), event("PERIOD_END", 2), event("PERIOD_START", 3), event("GOAL", 4)])).toBe(false)
+    expect(isPeriodEnded([event("MATCH_STARTED", 1)])).toBe(false)
+    expect(isPeriodEnded([])).toBe(false)
+  })
+})
+
+describe("hasNextPeriod", () => {
+  const event = (event_type: string, i: number) => ({ event_id: `e${i}`, event_type, clock_seconds: i })
+  const timeline = [event("MATCH_STARTED", 1), event("PERIOD_END", 2), event("PERIOD_START", 3), event("PERIOD_END", 4)]
+
+  it("é verdadeiro enquanto restam períodos a disputar", () => {
+    expect(hasNextPeriod({ timeline: timeline.slice(0, 2), modality_configuration: { num_periods: 2 } })).toBe(true)
+  })
+
+  it("é falso quando todos os períodos configurados já terminaram", () => {
+    expect(hasNextPeriod({ timeline, modality_configuration: { num_periods: 2 } })).toBe(false)
+  })
+
+  it("não bloqueia sem configuração de períodos", () => {
+    expect(hasNextPeriod({ timeline, modality_configuration: null })).toBe(true)
+    expect(hasNextPeriod({ timeline, modality_configuration: { num_periods: null } })).toBe(true)
   })
 })

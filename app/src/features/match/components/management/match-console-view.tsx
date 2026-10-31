@@ -18,6 +18,7 @@ import { StartMatchDialog } from "../start-match-dialog"
 import { ConnectionBadge } from "./connection-badge"
 import { ConsoleRoster } from "./console-roster"
 import { ConsoleScoreboard } from "./console-scoreboard"
+import { EndPeriodDialog } from "./end-period-dialog"
 import { EventDialog } from "./event-dialog"
 
 function configLabel({ modality_configuration: c }: MatchDetail) {
@@ -31,6 +32,7 @@ function configLabel({ modality_configuration: c }: MatchDetail) {
 export function MatchConsoleView({ id }: { id: string }) {
   const result = useMatch(id)
   const [starting, setStarting] = useState(false)
+  const [endingPeriod, setEndingPeriod] = useState(false)
   const [selected, setSelected] = useState<{ team: MatchTeam; player: MatchPlayer } | null>(null)
   const live = result.data?.status === "IN_PROGRESS"
   const connection = useMatchLive(id, live)
@@ -83,7 +85,7 @@ export function MatchConsoleView({ id }: { id: string }) {
           <ConsoleRoster team={match.team1} players={match.team1_players} cards={cards} onSelect={selectFrom(match.team1)} />
         </div>
         <div className="space-y-4 lg:order-2">
-          <ConsoleScoreboard match={match} onPlay={() => setStarting(true)} />
+          <ConsoleScoreboard match={match} onPlay={() => setStarting(true)} onEndPeriod={() => setEndingPeriod(true)} />
           <Card className="p-5">
             <MatchTimeline match={match} title="Linha do tempo" />
           </Card>
@@ -103,6 +105,8 @@ export function MatchConsoleView({ id }: { id: string }) {
           onClose={() => setSelected(null)}
         />
       )}
+
+      {endingPeriod && live && <EndPeriodDialog match={match} onClose={() => setEndingPeriod(false)} />}
 
       {starting && match.status === "SCHEDULED" && <StartMatchDialog match={match} liveMatches={[]} onClose={() => setStarting(false)} />}
     </div>

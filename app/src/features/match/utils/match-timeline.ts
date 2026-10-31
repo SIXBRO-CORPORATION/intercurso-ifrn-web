@@ -37,3 +37,14 @@ export function playerCards(timeline: MatchDetail["timeline"]) {
   }
   return cards
 }
+
+const PERIOD_MARKERS = new Set(["MATCH_STARTED", "PERIOD_START", "PERIOD_END"])
+
+export function isPeriodEnded(timeline: MatchDetail["timeline"]) {
+  return timeline.findLast((e) => PERIOD_MARKERS.has(e.event_type))?.event_type === "PERIOD_END"
+}
+
+export function hasNextPeriod({ timeline, modality_configuration }: Pick<MatchDetail, "timeline" | "modality_configuration">) {
+  const total = modality_configuration?.num_periods
+  return !total || timeline.filter((e) => e.event_type === "PERIOD_END").length < total
+}
