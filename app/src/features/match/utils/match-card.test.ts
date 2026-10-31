@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { clockLimit, formatClock, formatClockWithExtra, formatScheduledDate, formatScheduledSlot, periodLabel, phaseLabel, roundLabel, stageLabel } from "./match-card"
+import { clockLimit, formatClock, formatClockWithExtra, formatScheduledDate, formatScheduledSlot, periodLabel, phaseLabel, roundLabel, scoreActionLabel, stageLabel } from "./match-card"
 
 describe("formatScheduledDate", () => {
   it("devolve null sem data ou com data inválida", () => {
@@ -94,5 +94,19 @@ describe("formatClockWithExtra", () => {
   it("separa o que passou do limite em acréscimos", () => {
     expect(formatClockWithExtra(1325, 1200)).toEqual({ main: "20:00", extra: "02:05" })
     expect(formatClockWithExtra(2465, 2400)).toEqual({ main: "40:00", extra: "01:05" })
+  })
+})
+
+describe("scoreActionLabel", () => {
+  const team = { team_id: "t", name: "T", photo: null, score: 0 }
+
+  it("usa Gol por padrão e Ponto para pontuação por pontos", () => {
+    expect(scoreActionLabel({ team1: team, modality_configuration: { score_type: "GOALS" } })).toBe("Gol")
+    expect(scoreActionLabel({ team1: team, modality_configuration: null })).toBe("Gol")
+    expect(scoreActionLabel({ team1: team, modality_configuration: { score_type: "POINTS" } })).toBe("Ponto")
+  })
+
+  it("usa Ponto no vôlei", () => {
+    expect(scoreActionLabel({ team1: { ...team, sets_won: 0 }, modality_configuration: { score_type: "SETS" } })).toBe("Ponto")
   })
 })

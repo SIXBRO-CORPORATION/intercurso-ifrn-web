@@ -57,6 +57,10 @@ export function isVolleyMatch(match: Pick<Match, "team1">) {
   return match.team1?.sets_won != null
 }
 
+export function scoreActionLabel(match: Pick<MatchDetail, "team1" | "modality_configuration">) {
+  return isVolleyMatch(match) || match.modality_configuration?.score_type === "POINTS" ? "Ponto" : "Gol"
+}
+
 export function formatClock(seconds: number | null) {
   const total = Math.max(0, Math.floor(seconds ?? 0))
   const pad = (n: number) => String(n).padStart(2, "0")
