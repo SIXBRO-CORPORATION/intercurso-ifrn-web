@@ -1,6 +1,10 @@
 import type { MatchStatus } from "../schemas/match-schema"
 
-export type { Match, MatchDetail, MatchPage, MatchStatus, MatchTeam } from "../schemas/match-schema"
+export type { Match, MatchDetail, MatchPage, MatchPlayer, MatchStatus, MatchTeam } from "../schemas/match-schema"
+
+export type MatchEventKind = "GOAL" | "YELLOW" | "RED"
+
+export type MatchEventAction = { kind: MatchEventKind; team_id: string; player_id: string }
 
 export type MatchFilters = {
   season_id: string

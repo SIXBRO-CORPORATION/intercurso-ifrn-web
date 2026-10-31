@@ -2,7 +2,7 @@ import { AxiosError, type InternalAxiosRequestConfig } from "axios"
 import { beforeEach, describe, expect, it } from "vitest"
 import { api } from "@/lib/axios"
 import { parseFilters, toQuery } from "../utils/match-filters"
-import { getMatch, listMatches, startMatch } from "./match-repository"
+import { getMatch, listMatches, registerEvent, startMatch } from "./match-repository"
 
 const match = {
   match_id: "m1",
@@ -89,5 +89,30 @@ describe("startMatch", () => {
   it("repassa o erro do backend", async () => {
     status = 400
     await expect(startMatch("m1")).rejects.toThrow()
+  })
+})
+
+describe("registerEvent", () => {
+  const detail = { ...match, sets: [], team1_players: [], team2_players: [], timeline: [] }
+
+  it("faz POST em /goal com time e jogador", async () => {
+    reply = { data: detail }
+    await registerEvent("m1", { kind: "GOAL", team_id: "t1", player_id: "p1" })
+    expect(calls[0].method).toBe("post")
+    expect(calls[0].url).toBe("/api/match/m1/goal")
+    expect(JSON.parse(calls[0].data)).toEqual({ team_id: "t1", player_id: "p1" })
+  })
+
+  it.each(["YELLOW", "RED"] as const)("faz POST em /card com card_type %s", async (kind) => {
+    reply = { data: detail }
+    const result = await registerEvent("m1", { kind, team_id: "t1", player_id: "p1" })
+    expect(calls[0].url).toBe("/api/match/m1/card")
+    expect(JSON.parse(calls[0].data)).toEqual({ team_id: "t1", player_id: "p1", card_type: kind })
+    expect(result.match_id).toBe("m1")
+  })
+
+  it("repassa o erro do backend", async () => {
+    status = 400
+    await expect(registerEvent("m1", { kind: "GOAL", team_id: "t1", player_id: "p1" })).rejects.toThrow()
   })
 })

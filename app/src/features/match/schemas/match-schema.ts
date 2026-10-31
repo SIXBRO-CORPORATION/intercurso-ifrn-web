@@ -80,3 +80,4 @@ export const matchDetailResponseSchema = envelopeSchema(matchDetailSchema)
 export const matchLiveEventSchema = z.object({ match: matchDetailSchema.nullable() })
 
 export type MatchDetail = z.infer<typeof matchDetailSchema>
+export type MatchPlayer = z.infer<typeof matchPlayerSchema>
