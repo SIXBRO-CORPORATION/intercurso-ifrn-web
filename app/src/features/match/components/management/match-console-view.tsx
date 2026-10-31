@@ -10,7 +10,7 @@ import { Card } from "@/shared/components/ui/card"
 import { SCORE_TYPE_LABELS, STATUS_OPTIONS } from "../../constants"
 import { useMatch } from "../../hooks/use-match"
 import { useMatchLive } from "../../hooks/use-match-live"
-import type { MatchDetail } from "../../types/match"
+import type { MatchDetail, MatchPlayer, MatchTeam } from "../../types/match"
 import { roundLabel, stageLabel, teamsLabel } from "../../utils/match-card"
 import { playerCards } from "../../utils/match-timeline"
 import { MatchTimeline } from "../match-timeline"
@@ -18,6 +18,7 @@ import { StartMatchDialog } from "../start-match-dialog"
 import { ConnectionBadge } from "./connection-badge"
 import { ConsoleRoster } from "./console-roster"
 import { ConsoleScoreboard } from "./console-scoreboard"
+import { EventDialog } from "./event-dialog"
 
 function configLabel({ modality_configuration: c }: MatchDetail) {
   if (!c) return null
@@ -30,6 +31,7 @@ function configLabel({ modality_configuration: c }: MatchDetail) {
 export function MatchConsoleView({ id }: { id: string }) {
   const result = useMatch(id)
   const [starting, setStarting] = useState(false)
+  const [selected, setSelected] = useState<{ team: MatchTeam; player: MatchPlayer } | null>(null)
   const live = result.data?.status === "IN_PROGRESS"
   const connection = useMatchLive(id, live)
 
@@ -47,6 +49,8 @@ export function MatchConsoleView({ id }: { id: string }) {
   const cards = playerCards(match.timeline)
   const config = configLabel(match)
   const badges = [stageLabel(match), roundLabel(match)].filter(Boolean)
+  const selectFrom = (team: MatchTeam | null) =>
+    live && team ? (player: MatchPlayer) => setSelected({ team, player }) : undefined
   const statusLabel = STATUS_OPTIONS.find((o) => o.value === match.status)?.label
 
   return (
@@ -76,7 +80,7 @@ export function MatchConsoleView({ id }: { id: string }) {
 
       <div className="grid items-start gap-4 lg:grid-cols-[1fr_1.4fr_1fr]">
         <div className="lg:order-1">
-          <ConsoleRoster team={match.team1} players={match.team1_players} cards={cards} />
+          <ConsoleRoster team={match.team1} players={match.team1_players} cards={cards} onSelect={selectFrom(match.team1)} />
         </div>
         <div className="space-y-4 lg:order-2">
           <ConsoleScoreboard match={match} onPlay={() => setStarting(true)} />
@@ -85,9 +89,20 @@ export function MatchConsoleView({ id }: { id: string }) {
           </Card>
         </div>
         <div className="lg:order-3">
-          <ConsoleRoster team={match.team2} players={match.team2_players} cards={cards} />
+          <ConsoleRoster team={match.team2} players={match.team2_players} cards={cards} onSelect={selectFrom(match.team2)} />
         </div>
       </div>
+
+      {selected && live && (
+        <EventDialog
+          key={selected.player.user_id}
+          match={match}
+          team={selected.team}
+          player={selected.player}
+          yellows={cards.get(selected.player.user_id)?.yellow ?? 0}
+          onClose={() => setSelected(null)}
+        />
+      )}
 
       {starting && match.status === "SCHEDULED" && <StartMatchDialog match={match} liveMatches={[]} onClose={() => setStarting(false)} />}
     </div>
