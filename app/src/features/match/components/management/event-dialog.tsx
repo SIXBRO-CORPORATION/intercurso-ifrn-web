@@ -19,9 +19,22 @@ type Props = {
   onClose: () => void
 }
 
+type Expulsion = "YELLOW" | "RED"
+
+const WARNINGS: Record<Expulsion, (name: string) => { title: string; text: string }> = {
+  YELLOW: (name) => ({
+    title: "Isso resultará em expulsão",
+    text: `${name} já possui 1 cartão amarelo nesta partida. O segundo amarelo expulsa o jogador automaticamente. Confirmar?`,
+  }),
+  RED: (name) => ({
+    title: "Cartão vermelho expulsa o jogador",
+    text: `${name} será expulso imediatamente e não poderá mais marcar nesta partida. Confirmar?`,
+  }),
+}
+
 export function EventDialog({ match, team, player, yellows, onClose }: Props) {
   const register = useRegisterEvent(match.match_id)
-  const [confirmingExpulsion, setConfirmingExpulsion] = useState(false)
+  const [confirming, setConfirming] = useState<Expulsion | null>(null)
   const scoreLabel = scoreActionLabel(match)
   const ScoreIcon = scoreLabel === "Gol" ? CircleDot : Plus
 
@@ -53,19 +66,17 @@ export function EventDialog({ match, team, player, yellows, onClose }: Props) {
           </div>
         )}
 
-        {confirmingExpulsion ? (
+        {confirming ? (
           <>
             <Alert variant="destructive">
-              <AlertTitle>Isso resultará em expulsão</AlertTitle>
-              <AlertDescription>
-                {player.name} já possui 1 cartão amarelo nesta partida. O segundo amarelo expulsa o jogador automaticamente. Confirmar?
-              </AlertDescription>
+              <AlertTitle>{WARNINGS[confirming](player.name).title}</AlertTitle>
+              <AlertDescription>{WARNINGS[confirming](player.name).text}</AlertDescription>
             </Alert>
             <DialogFooter>
-              <Button variant="neutral" disabled={register.isPending} onClick={() => setConfirmingExpulsion(false)}>
+              <Button variant="neutral" disabled={register.isPending} onClick={() => setConfirming(null)}>
                 Voltar
               </Button>
-              <Button variant="danger" disabled={register.isPending} onClick={() => submit("YELLOW")}>
+              <Button variant="danger" disabled={register.isPending} onClick={() => submit(confirming)}>
                 {register.isPending ? "Registrando…" : "Confirmar expulsão"}
               </Button>
             </DialogFooter>
@@ -79,11 +90,11 @@ export function EventDialog({ match, team, player, yellows, onClose }: Props) {
               variant="warning"
               size="lg"
               disabled={register.isPending}
-              onClick={() => (yellows > 0 ? setConfirmingExpulsion(true) : submit("YELLOW"))}
+              onClick={() => (yellows > 0 ? setConfirming("YELLOW") : submit("YELLOW"))}
             >
               <Square className="fill-current" aria-hidden /> Cartão amarelo
             </Button>
-            <Button variant="danger" size="lg" disabled={register.isPending} onClick={() => submit("RED")}>
+            <Button variant="danger" size="lg" disabled={register.isPending} onClick={() => setConfirming("RED")}>
               <Square className="fill-current" aria-hidden /> Cartão vermelho
             </Button>
             <p className="type-caption text-center text-faint">Esc para cancelar</p>
