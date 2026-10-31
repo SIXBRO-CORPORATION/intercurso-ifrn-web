@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { matchDetailSchema } from "../schemas/match-schema"
-import { timelineRows } from "./match-timeline"
+import { playerCards, timelineRows } from "./match-timeline"
 
 const base = {
   match_id: "m1", bracket_id: null, modality_id: "mod", modality_name: "Futsal", group_name: null,
@@ -48,5 +48,22 @@ describe("timelineRows", () => {
   it("inverte a ordem somente ao vivo", () => {
     expect(rows({ status: "IN_PROGRESS" })[0].label).toBe("Fim do set 2")
     expect(rows()[0].label).toBe("Gol")
+  })
+})
+
+describe("playerCards", () => {
+  it("conta amarelos e marca vermelho ou expulsão por jogador", () => {
+    const cards = playerCards([
+      { event_id: "1", event_type: "CARD_YELLOW", clock_seconds: 1, player_id: "a" },
+      { event_id: "2", event_type: "CARD_YELLOW", clock_seconds: 2, player_id: "a" },
+      { event_id: "3", event_type: "EXPULSION", clock_seconds: 2, player_id: "a" },
+      { event_id: "4", event_type: "CARD_RED", clock_seconds: 3, player_id: "b" },
+      { event_id: "5", event_type: "GOAL", clock_seconds: 4, player_id: "c" },
+      { event_id: "6", event_type: "PERIOD_END", clock_seconds: 5, player_id: null },
+    ])
+    expect(cards.get("a")).toEqual({ yellow: 2, red: true })
+    expect(cards.get("b")).toEqual({ yellow: 0, red: true })
+    expect(cards.get("c")).toEqual({ yellow: 0, red: false })
+    expect(cards.size).toBe(3)
   })
 })

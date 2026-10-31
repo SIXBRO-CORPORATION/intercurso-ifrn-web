@@ -25,3 +25,15 @@ export function timelineRows(match: MatchDetail) {
   })
   return match.status === "IN_PROGRESS" ? rows.reverse() : rows
 }
+
+export function playerCards(timeline: MatchDetail["timeline"]) {
+  const cards = new Map<string, { yellow: number; red: boolean }>()
+  for (const e of timeline) {
+    if (!e.player_id) continue
+    const card = cards.get(e.player_id) ?? { yellow: 0, red: false }
+    if (e.event_type === "CARD_YELLOW") card.yellow++
+    if (e.event_type === "CARD_RED" || e.event_type === "EXPULSION") card.red = true
+    cards.set(e.player_id, card)
+  }
+  return cards
+}

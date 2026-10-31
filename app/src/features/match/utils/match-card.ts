@@ -1,7 +1,7 @@
 import { format, isValid, parseISO } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import type { Modality } from "@/features/modality"
-import type { Match } from "../types/match"
+import type { Match, MatchDetail } from "../types/match"
 
 const dateOnly = /^\d{4}-\d{2}-\d{2}$/
 
@@ -72,4 +72,9 @@ export function formatClockWithExtra(seconds: number | null, limit: number | nul
 export function clockLimit(modality: Pick<Modality, "score_type" | "period_durations_minutes"> | undefined, period: number | null) {
   if (!modality?.period_durations_minutes || modality.score_type === "SETS") return null
   return modality.period_durations_minutes * 60 * Math.max(1, period ?? 1)
+}
+
+export function matchClockLimit({ modality_configuration: config, current_period }: Pick<MatchDetail, "modality_configuration" | "current_period">) {
+  if (!config) return null
+  return clockLimit({ score_type: config.score_type, period_durations_minutes: config.period_duration_minutes }, current_period)
 }
