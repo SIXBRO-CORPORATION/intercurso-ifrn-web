@@ -2,7 +2,8 @@ import { LiveDot } from "@/shared/components/live-dot"
 import { Avatar } from "@/shared/components/ui/avatar"
 import { STATUS_OPTIONS } from "../constants"
 import type { MatchDetail, MatchTeam } from "../types/match"
-import { formatClock, formatScheduledDate, isVolleyMatch, periodLabel, phaseLabel } from "../utils/match-card"
+import { formatScheduledDate, matchClockLimit, isVolleyMatch, periodLabel, phaseLabel } from "../utils/match-card"
+import { LiveClock } from "./live-clock"
 
 function Team({ team }: { team: MatchTeam | null }) {
   return (
@@ -35,7 +36,11 @@ export function MatchHeader({ match }: { match: MatchDetail }) {
           {live && match.clock_running && <LiveDot />}
           {live && match.clock_running ? "Ao vivo" : statusLabel}
         </span>
-        <span className="type-caption text-white/80">{[period, live && formatClock(match.clock_seconds)].filter(Boolean).join(" · ")}</span>
+        <span className="type-caption text-white/80">
+          {period}
+          {period && live && " · "}
+          {live && <LiveClock seconds={match.clock_seconds} running={match.clock_running} limit={matchClockLimit(match)} />}
+        </span>
       </header>
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         <Team team={team1} />

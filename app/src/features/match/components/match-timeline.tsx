@@ -2,11 +2,11 @@ import { cn } from "@/lib/utils"
 import type { MatchDetail } from "../types/match"
 import { timelineRows } from "../utils/match-timeline"
 
-export function MatchTimeline({ match }: { match: MatchDetail }) {
+export function MatchTimeline({ match, title = "Lances" }: { match: MatchDetail; title?: string }) {
   const rows = timelineRows(match)
   return (
     <section className="space-y-3">
-      <h2 className="type-section text-ink">Lances</h2>
+      <h2 className="type-section text-ink">{title}</h2>
       {rows.length ? (
         <ol className="space-y-2">
           {rows.map(({ id, type: { icon: Icon, className }, label, clock, team, player }) => (

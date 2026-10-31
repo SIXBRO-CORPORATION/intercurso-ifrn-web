@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { clockLimit, formatClock, formatScheduledDate, formatScheduledSlot, periodLabel, phaseLabel, roundLabel, stageLabel } from "./match-card"
+import { clockLimit, formatClock, formatClockWithExtra, formatScheduledDate, formatScheduledSlot, periodLabel, phaseLabel, roundLabel, stageLabel } from "./match-card"
 
 describe("formatScheduledDate", () => {
   it("devolve null sem data ou com data inválida", () => {
@@ -82,5 +82,17 @@ describe("clockLimit", () => {
   it("não limita vôlei nem modalidade desconhecida", () => {
     expect(clockLimit({ score_type: "SETS", period_durations_minutes: 90 }, 1)).toBeNull()
     expect(clockLimit(undefined, 1)).toBeNull()
+  })
+})
+
+describe("formatClockWithExtra", () => {
+  it("não separa acréscimos sem limite ou dentro do tempo", () => {
+    expect(formatClockWithExtra(754, null)).toEqual({ main: "12:34", extra: null })
+    expect(formatClockWithExtra(1200, 1200)).toEqual({ main: "20:00", extra: null })
+  })
+
+  it("separa o que passou do limite em acréscimos", () => {
+    expect(formatClockWithExtra(1325, 1200)).toEqual({ main: "20:00", extra: "02:05" })
+    expect(formatClockWithExtra(2465, 2400)).toEqual({ main: "40:00", extra: "01:05" })
   })
 })
