@@ -2,7 +2,7 @@ import { isAxiosError } from "axios"
 import { MATCH_API } from "@/core/config/endpoints"
 import { api } from "@/lib/axios"
 import { matchDetailResponseSchema, matchListSchema } from "../schemas/match-schema"
-import type { MatchEventAction } from "../types/match"
+import type { MatchAction, MatchEventAction } from "../types/match"
 import { toApiQuery } from "../utils/match-filters"
 
 export async function listMatches(query: URLSearchParams, signal: AbortSignal) {
@@ -21,6 +21,11 @@ export async function registerEvent(id: string, { kind, team_id, player_id }: Ma
     `${MATCH_API}${encodeURIComponent(id)}/${isGoal ? "goal" : "card"}`,
     isGoal ? { team_id, player_id } : { team_id, player_id, card_type: kind },
   )
+  return matchDetailResponseSchema.parse(data).data
+}
+
+export async function runMatchAction(id: string, action: MatchAction) {
+  const { data } = await api.post(`${MATCH_API}${encodeURIComponent(id)}/${action}`)
   return matchDetailResponseSchema.parse(data).data
 }
 

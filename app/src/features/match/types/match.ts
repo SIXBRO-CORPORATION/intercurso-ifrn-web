@@ -15,3 +15,5 @@ export type MatchFilters = {
   page: number
   size: number
 }
+
+export type MatchAction = "clock/pause" | "clock/resume" | "period/end" | "period/start"
