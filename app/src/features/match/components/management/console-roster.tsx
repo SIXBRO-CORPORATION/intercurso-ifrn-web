@@ -50,7 +50,6 @@ export function ConsoleRoster({ team, players, cards, onSelect }: Props) {
                       ))}
                     </span>
                   )}
-                  {card?.red && !expelled && <Square className="size-4 fill-danger text-danger" aria-label="Cartão vermelho" />}
                 </button>
               </li>
             )
