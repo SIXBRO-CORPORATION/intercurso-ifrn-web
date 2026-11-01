@@ -6,7 +6,12 @@ const nextConfig: NextConfig = {
   output: "standalone",
   skipTrailingSlashRedirect: true,
   async rewrites() {
-    return [{ source: "/api/:path*", destination: `${NEXT_API_URL}/api/:path*` }];
+    return [
+      // Preserva a barra final (/api/match/, /api/modality/): sem ela o FastAPI responde 307
+      // para a URL do backend e o navegador falha por CORS.
+      { source: "/api/:path*/", destination: `${NEXT_API_URL}/api/:path*/` },
+      { source: "/api/:path*", destination: `${NEXT_API_URL}/api/:path*` },
+    ];
   },
 };
 

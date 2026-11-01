@@ -15,8 +15,11 @@ export const seasonSchema = z.object({
   year: z.number().int(),
   status: z.enum(SEASON_STATUSES),
   active: z.boolean(),
+  registration_start_date: z.string().nullish(),
+  registration_end_date: z.string().nullish(),
 })
 
 export const activeSeasonSchema = envelopeSchema(seasonSchema.nullable())
 
 export type Season = z.infer<typeof seasonSchema>
+export type SeasonStatus = Season["status"]
