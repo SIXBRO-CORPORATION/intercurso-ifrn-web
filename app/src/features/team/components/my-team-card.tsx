@@ -4,6 +4,7 @@ import { Avatar } from "@/shared/components/ui/avatar"
 import { Badge } from "@/shared/components/ui/badge"
 import { Button } from "@/shared/components/ui/button"
 import { Card } from "@/shared/components/ui/card"
+import { Progress } from "@/shared/components/ui/progress"
 import { resolvePhotoSrc } from "@/shared/utils/photo-src"
 import { TEAM_STATUS_LABELS, TEAM_STATUS_VARIANTS } from "../constants"
 import type { TeamSummary } from "../schemas/team-schema"
@@ -36,12 +37,7 @@ export function MyTeamCard({ team, userId }: { team: TeamSummary; userId?: strin
                     </Link>
                 </Button>
             </div>
-            <div aria-hidden className="h-1.5 overflow-hidden rounded-full bg-field">
-                <div
-                    className="h-full rounded-full bg-primary"
-                    style={{ width: `${getMembersPercent(team.members_count, team.max_members)}%` }}
-                />
-            </div>
+            <Progress value={getMembersPercent(team.members_count, team.max_members)} aria-hidden />
         </Card>
     )
 }

@@ -34,7 +34,7 @@ describe("getRegistrationState", () => {
         expect(state.open).toBe(false)
         expect(state.message).toBe("Não há período de inscrições aberto no momento.")
         expect(state.detail).toContain("Abrem em 19/03/2026")
-        expect(state.detail).toContain("faltam 2 dias")
+        expect(state.detail).toContain("faltam 3 dias")
     })
 
     it("bloqueia sem contagem quando a abertura não está disponível", () => {

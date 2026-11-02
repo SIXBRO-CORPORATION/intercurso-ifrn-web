@@ -4,9 +4,9 @@ import Link from "next/link"
 import { Clock, Plus } from "lucide-react"
 import { useAuth } from "@/features/auth/contexts/auth-context"
 import { getRegistrationState, useActiveSeason, type RegistrationState } from "@/features/season"
-import { cn } from "@/lib/utils"
 import { PageHeader } from "@/shared/components/page-header"
 import { EmptyState, ErrorState, GridSkeleton } from "@/shared/components/request-states"
+import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
 import { Button } from "@/shared/components/ui/button"
 import { Card } from "@/shared/components/ui/card"
 import { NEW_TEAM_PATH } from "../constants"
@@ -23,20 +23,11 @@ const SEASON_ERROR: RegistrationState = {
 
 function RegistrationBanner({ state }: { state: RegistrationState }) {
     return (
-        <div
-            id={BANNER_ID}
-            role="status"
-            className={cn(
-                "flex items-start gap-3 rounded-lg p-4",
-                state.open ? "bg-primary-soft text-primary-dark" : "bg-warning-soft text-warning-text",
-            )}
-        >
-            <Clock className="mt-0.5 size-5 shrink-0" aria-hidden />
-            <div>
-                <p className="type-section">{state.message}</p>
-                {state.detail && <p className="type-body-sm">{state.detail}</p>}
-            </div>
-        </div>
+        <Alert id={BANNER_ID} role="status" variant={state.open ? "success" : "warning"}>
+            <Clock aria-hidden />
+            <AlertTitle>{state.message}</AlertTitle>
+            {state.detail && <AlertDescription>{state.detail}</AlertDescription>}
+        </Alert>
     )
 }
 
@@ -61,9 +52,7 @@ function MyTeams({ seasonId, registration }: { seasonId?: string; registration: 
                 )}
             </div>
             <RegistrationBanner state={registration} />
-
             {teams.isPending && <GridSkeleton label={LOADING_LABEL} />}
-
             {teams.isError && (
                 <ErrorState
                     title="Não foi possível carregar suas equipes."
@@ -71,20 +60,20 @@ function MyTeams({ seasonId, registration }: { seasonId?: string; registration: 
                     onRetry={() => teams.refetch()}
                 />
             )}
-            {teams.status === "success" && teams.data.length === 0 && (
+            {teams.isSuccess && teams.data.length === 0 && (
                 <EmptyState
                     title="Você ainda não participa de nenhuma equipe."
                     description="Quando você criar ou entrar em uma equipe, ela aparece aqui."
                 />
             )}
-            {teams.status === "success" && (teams.data.length > 0 || registration.open) && (
+            {teams.isSuccess && teams.data.length > 0 && (
                 <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {teams.data.map((team) => (
                         <li key={team.team_id}>
                             <MyTeamCard team={team} userId={user?.userId} />
                         </li>
                     ))}
-                    {registration.open && teams.data.length > 0 && (
+                    {registration.open && (
                         <li>
                             <Card
                                 asChild
@@ -104,25 +93,11 @@ function MyTeams({ seasonId, registration }: { seasonId?: string; registration: 
     )
 }
 
-
-
 export function MyTeamsView() {
     const season = useActiveSeason()
 
-    if (season.isPending) {
-        return <GridSkeleton label={LOADING_LABEL} />
-    }
+    if (season.isPending) return <GridSkeleton label={LOADING_LABEL} />
+    if (season.isError) return <MyTeams registration={SEASON_ERROR} />
 
-    if (season.isError) {
-        return <MyTeams registration={SEASON_ERROR} />
-    }
-
-    const activeSeason = season.data
-
-    return (
-        <MyTeams
-            seasonId={activeSeason?.season_id}
-            registration={getRegistrationState(activeSeason, new Date())}
-        />
-    )
+    return <MyTeams seasonId={season.data?.season_id} registration={getRegistrationState(season.data, new Date())} />
 }
