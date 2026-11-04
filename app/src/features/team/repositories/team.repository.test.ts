@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { api } from "@/lib/axios"
 import { listTeams } from "./team-repository"
 
-const team = { team_id: "t1", name: "Info", modality_id: "m1", photo: null, members_count: 7, max_members: 10 }
+const team = { team_id: "t1", name: "Info", modality_id: "m1", status: "APPROVED", photo: null, members_count: 7, max_members: 10 }
 
 let reply: unknown
 let status: number
