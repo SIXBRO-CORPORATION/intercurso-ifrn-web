@@ -5,15 +5,14 @@ import { Bell, CalendarDays, ChevronDown } from "lucide-react"
 import { Avatar } from "@/shared/components/ui/avatar"
 import { useAuth } from "@/features/auth/contexts/auth-context"
 import { useActiveSeason } from "@/features/season"
-import { OVERVIEW, SECTIONS, canUse } from "../constants/sections"
+import { OVERVIEW, canUse, sectionOf } from "../constants/sections"
 
 const PILL = "type-label inline-flex h-11 cursor-default items-center gap-2 rounded-full border border-border bg-card px-4 font-bold text-ink"
 
 export function DashboardTopbar() {
   const { user } = useAuth()
   const season = useActiveSeason()
-  const slug = usePathname().split("/")[2]
-  const title = SECTIONS.find((s) => s.slug === slug)?.label ?? OVERVIEW.label
+  const title = sectionOf(usePathname())?.label ?? OVERVIEW.label
   const seasonName = season.data?.name ?? "Sem temporada"
   const monitor = canUse(user?.role, "MONITOR")
 

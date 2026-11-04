@@ -6,7 +6,7 @@ import { LiveDot } from "@/shared/components/live-dot"
 import { Badge } from "@/shared/components/ui/badge"
 import { Button } from "@/shared/components/ui/button"
 import { Card } from "@/shared/components/ui/card"
-import { MANAGE_PATH } from "../constants"
+import { href } from "@/core/routes/route-registry"
 import type { Match, MatchTeam } from "../types/match"
 import { clockLimit, formatScheduledSlot, isVolleyMatch, periodLabel, roundLabel, stageLabel, teamsLabel } from "../utils/match-card"
 import { LiveClock } from "./live-clock"
@@ -129,7 +129,7 @@ export function LiveMatchTable({ matches, modalities }: { matches: Match[]; moda
             </td>
             <td className={cn(td, "text-right")}>
               <Button asChild size="sm" variant="outline">
-                <Link href={`${MANAGE_PATH}/${match.match_id}`}>Gerenciar</Link>
+                <Link href={href("manageMatch", { id: match.match_id })}>Gerenciar</Link>
               </Button>
             </td>
           </tr>
@@ -170,7 +170,7 @@ export function FinishedMatchTable({ matches }: { matches: Match[] }) {
             </td>
             <td className={cn(td, "text-right")}>
               <Button asChild size="sm" variant="outline">
-                <Link href={`/partidas/${match.match_id}`}>Ver partida</Link>
+                <Link href={href("match", { id: match.match_id })}>Ver partida</Link>
               </Button>
             </td>
           </tr>

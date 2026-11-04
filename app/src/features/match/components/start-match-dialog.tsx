@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Button } from "@/shared/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/shared/components/ui/dialog"
-import { MANAGE_PATH } from "../constants"
+import { href } from "@/core/routes/route-registry"
 import { useStartMatch } from "../hooks/use-start-match"
 import type { Match } from "../types/match"
 import { teamsLabel } from "../utils/match-card"
@@ -33,7 +33,7 @@ export function StartMatchDialog({ match, liveMatches, onClose }: Props) {
             <p>{failure.message}</p>
             {failure.ongoingMatchId && (
               <Link
-                href={`${MANAGE_PATH}/${failure.ongoingMatchId}`}
+                href={href("manageMatch", { id: failure.ongoingMatchId })}
                 className="mt-1 inline-block font-bold underline underline-offset-4"
               >
                 {ongoing ? `Ir para ${teamsLabel(ongoing)}` : "Ir para a partida em andamento"}

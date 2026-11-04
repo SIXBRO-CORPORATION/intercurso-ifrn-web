@@ -2,23 +2,18 @@
 
 import { useEffect, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
+import { href } from "@/core/routes/route-registry"
 import { saveReturnPath } from "@/infrastructure/storage/return-to-storage"
 import { useAuth } from "../contexts/auth-context"
 
-export function AuthGuard({
-  children,
-  roles,
-}: {
-  children: ReactNode
-  roles?: string[]
-}) {
-  const { status, user } = useAuth()
+export function AuthGuard({ children }: { children: ReactNode }) {
+  const { status } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
     if (status === "anonymous") {
       saveReturnPath(window.location.pathname + window.location.search)
-      router.replace("/login")
+      router.replace(href("login"))
     }
   }, [status, router])
 
@@ -26,14 +21,6 @@ export function AuthGuard({
     return (
       <p role="status" className="p-6 text-muted-foreground">
         Carregando…
-      </p>
-    )
-  }
-
-  if (roles && user && user.role !== "ADMIN" && !roles.includes(user.role)) {
-    return (
-      <p role="alert" className="p-6 text-destructive">
-        Você não tem permissão para acessar esta página.
       </p>
     )
   }

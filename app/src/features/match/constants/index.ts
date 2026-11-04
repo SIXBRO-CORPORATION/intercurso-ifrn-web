@@ -14,7 +14,6 @@ export const MATCH_EVENT_NAMES = [
   "event_deleted",
   "match_finished",
 ]
-export const MANAGE_PATH = "/dashboard/partidas/gerenciar"
 
 export const STATUS_OPTIONS: { value: MatchStatus; label: string }[] = [
   { value: "SCHEDULED", label: "Agendado" },
