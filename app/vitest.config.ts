@@ -3,5 +3,18 @@ import { defineConfig } from "vitest/config"
 
 export default defineConfig({
   resolve: { alias: { "@": path.resolve(__dirname, "src") } },
-  test: { environment: "node", include: ["src/**/*.test.ts"] },
+  test: {
+    projects: [
+      { extends: true, test: { name: "unit", environment: "node", include: ["src/**/*.test.ts"] } },
+      {
+        extends: true,
+        test: {
+          name: "components",
+          environment: "jsdom",
+          include: ["src/**/*.test.tsx"],
+          setupFiles: ["src/tests/setup.ts"],
+        },
+      },
+    ],
+  },
 })

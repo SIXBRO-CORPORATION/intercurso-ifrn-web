@@ -8,6 +8,7 @@ import { isVolleyMatch, matchClockLimit, periodLabel } from "../../utils/match-c
 import { parseMatchActionError } from "../../utils/match-action-error"
 import { hasNextPeriod, isPeriodEnded } from "../../utils/match-timeline"
 import { LiveClock } from "../live-clock"
+import { SetPrompt } from "./set-prompt"
 
 const ACTION =
   "type-label h-11 rounded-full bg-white/20 font-bold text-white/70 transition-colors enabled:text-white enabled:hover:bg-white/30 disabled:cursor-default"
@@ -65,6 +66,7 @@ export function ConsoleScoreboard({ match, onPlay, onEndPeriod }: Props) {
           )}
         </p>
       )}
+      {live && volley && <SetPrompt match={match} />}
       {status === "SCHEDULED" && (
         <Button variant="dark" size="lg" className="w-full" onClick={onPlay}>
           <Play aria-hidden /> Play
