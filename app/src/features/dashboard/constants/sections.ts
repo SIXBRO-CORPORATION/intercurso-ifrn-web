@@ -58,6 +58,7 @@ export const SECTIONS: Section[] = [
     icon: Users,
     summary: "Montagem, convites e aprovação dos times.",
     features: [
+      { name: "Minhas equipes", description: "Suas equipes, o status de cada uma e o estado das inscrições.", role: "USER", uc: "UC005", href: "/equipes" },
       { name: "Criar equipe", description: "Cria o time em rascunho e define o capitão.", role: "USER", uc: "UC005" },
       { name: "Entrar via convite", description: "Link de convite, com regeneração quando necessário.", role: "USER", uc: "UC006" },
       { name: "Gerenciar membros", description: "Adicionar, remover, trocar capitão e sair da equipe.", role: "USER", uc: "UC007" },
