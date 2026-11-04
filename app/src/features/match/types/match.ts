@@ -16,4 +16,4 @@ export type MatchFilters = {
   size: number
 }
 
-export type MatchAction = "clock/pause" | "clock/resume" | "period/end" | "period/start" | "set/end"
+export type MatchAction = "clock/pause" | "clock/resume" | "period/end" | "period/start" | "set/end" | "finish"

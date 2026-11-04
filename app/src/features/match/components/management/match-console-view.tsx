@@ -1,11 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Flag } from "lucide-react"
 import { EmptyState, ErrorState } from "@/shared/components/request-states"
 import { LiveDot } from "@/shared/components/live-dot"
 import { Badge } from "@/shared/components/ui/badge"
-import { Button } from "@/shared/components/ui/button"
 import { Card } from "@/shared/components/ui/card"
 import { SCORE_TYPE_LABELS, STATUS_OPTIONS } from "../../constants"
 import { useMatch } from "../../hooks/use-match"
@@ -20,6 +18,7 @@ import { ConsoleRoster } from "./console-roster"
 import { ConsoleScoreboard } from "./console-scoreboard"
 import { EndPeriodDialog } from "./end-period-dialog"
 import { EventDialog } from "./event-dialog"
+import { FinishMatch } from "./finish-match"
 import { SetHistory } from "./set-history"
 
 function configLabel({ modality_configuration: c }: MatchDetail) {
@@ -73,9 +72,7 @@ export function MatchConsoleView({ id }: { id: string }) {
           </div>
           <div className="flex items-center gap-3">
             <ConnectionBadge status={connection} />
-            <Button variant="dark" disabled>
-              <Flag aria-hidden /> Finalizar partida
-            </Button>
+            {live && <FinishMatch match={match} />}
           </div>
         </div>
         {config && <p className="type-caption text-muted-foreground">{config}</p>}
