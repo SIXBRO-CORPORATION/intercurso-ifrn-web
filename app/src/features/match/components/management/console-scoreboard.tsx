@@ -6,6 +6,7 @@ import { useMatchAction } from "../../hooks/use-match-action"
 import type { MatchDetail, MatchTeam } from "../../types/match"
 import { isVolleyMatch, matchClockLimit, periodLabel } from "../../utils/match-card"
 import { parseMatchActionError } from "../../utils/match-action-error"
+import { matchWinnerTeam } from "../../utils/match-finish"
 import { hasNextPeriod, isPeriodEnded } from "../../utils/match-timeline"
 import { LiveClock } from "../live-clock"
 import { SetPrompt } from "./set-prompt"
@@ -21,6 +22,7 @@ export function ConsoleScoreboard({ match, onPlay, onEndPeriod }: Props) {
   const volley = isVolleyMatch(match)
   const live = status === "IN_PROGRESS"
   const shootout = team1?.penalty_score != null && team2?.penalty_score != null
+  const winner = matchWinnerTeam(match)
   const value = (t: MatchTeam | null) => (volley && status === "FINISHED" ? t?.sets_won : t?.score) ?? 0
   const ended = live && !volley && isPeriodEnded(match.timeline)
   const noNextPeriod = !hasNextPeriod(match)
@@ -52,6 +54,11 @@ export function ConsoleScoreboard({ match, onPlay, onEndPeriod }: Props) {
         </p>
         <p className="type-body-lg wrap-break-word font-bold">{team2?.name ?? "A definir"}</p>
       </div>
+      {status === "FINISHED" && (
+        <p className="type-label text-center text-white/80">
+          {winner ? `Vencedor: ${winner.name}` : "Empate"}
+        </p>
+      )}
       {shootout && (
         <p className="type-label text-center text-white/80">
           Pênaltis {team1?.penalty_score} – {team2?.penalty_score}

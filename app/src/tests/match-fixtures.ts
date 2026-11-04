@@ -2,11 +2,13 @@ import type { MatchDetail } from "@/features/match/types/match"
 
 type Options = {
   score?: [number, number]
-  setsWon?: [number, number]
+  setsWon?: [number, number] | null
   sets?: MatchDetail["sets"]
+  status?: MatchDetail["status"]
+  winnerId?: string | null
 }
 
-export function makeMatch({ score = [0, 0], setsWon = [0, 0], sets = [] }: Options = {}): MatchDetail {
+export function makeMatch({ score = [0, 0], setsWon = [0, 0], sets = [], status = "IN_PROGRESS", winnerId = null }: Options = {}): MatchDetail {
   return {
     match_id: "m1",
     bracket_id: null,
@@ -15,11 +17,11 @@ export function makeMatch({ score = [0, 0], setsWon = [0, 0], sets = [] }: Optio
     group_name: null,
     match_type: null,
     match_category: null,
-    status: "IN_PROGRESS",
+    status,
     scheduled_date: null,
-    team1: { team_id: "t1", name: "Falcões", photo: null, score: score[0], sets_won: setsWon[0] },
-    team2: { team_id: "t2", name: "Tigres", photo: null, score: score[1], sets_won: setsWon[1] },
-    winner_id: null,
+    team1: { team_id: "t1", name: "Falcões", photo: null, score: score[0], sets_won: setsWon?.[0] },
+    team2: { team_id: "t2", name: "Tigres", photo: null, score: score[1], sets_won: setsWon?.[1] },
+    winner_id: winnerId,
     clock_seconds: null,
     clock_running: false,
     current_period: null,
