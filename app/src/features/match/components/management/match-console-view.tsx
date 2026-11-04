@@ -11,7 +11,7 @@ import { SCORE_TYPE_LABELS, STATUS_OPTIONS } from "../../constants"
 import { useMatch } from "../../hooks/use-match"
 import { useMatchLive } from "../../hooks/use-match-live"
 import type { MatchDetail, MatchPlayer, MatchTeam } from "../../types/match"
-import { roundLabel, stageLabel, teamsLabel } from "../../utils/match-card"
+import { isVolleyMatch, roundLabel, stageLabel, teamsLabel } from "../../utils/match-card"
 import { playerCards } from "../../utils/match-timeline"
 import { MatchTimeline } from "../match-timeline"
 import { StartMatchDialog } from "../start-match-dialog"
@@ -20,6 +20,7 @@ import { ConsoleRoster } from "./console-roster"
 import { ConsoleScoreboard } from "./console-scoreboard"
 import { EndPeriodDialog } from "./end-period-dialog"
 import { EventDialog } from "./event-dialog"
+import { SetHistory } from "./set-history"
 
 function configLabel({ modality_configuration: c }: MatchDetail) {
   if (!c) return null
@@ -86,6 +87,11 @@ export function MatchConsoleView({ id }: { id: string }) {
         </div>
         <div className="space-y-4 lg:order-2">
           <ConsoleScoreboard match={match} onPlay={() => setStarting(true)} onEndPeriod={() => setEndingPeriod(true)} />
+          {isVolleyMatch(match) && (
+            <Card className="p-5">
+              <SetHistory match={match} />
+            </Card>
+          )}
           <Card className="p-5">
             <MatchTimeline match={match} title="Linha do tempo" />
           </Card>
