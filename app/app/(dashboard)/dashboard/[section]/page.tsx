@@ -2,6 +2,7 @@
 
 import { use } from "react"
 import { notFound } from "next/navigation"
+import { PermissionDenied } from "@/features/auth/components/access-gate"
 import { useAuth } from "@/features/auth/contexts/auth-context"
 import { FeatureList } from "@/features/dashboard/components/feature-list"
 import { SECTIONS, canUse } from "@/features/dashboard/constants/sections"
@@ -12,7 +13,8 @@ export default function SectionPage({ params }: { params: Promise<{ section: str
   const { user } = useAuth()
   const s = SECTIONS.find((x) => x.slug === section)
   const features = s?.features.filter((f) => canUse(user?.role, f.role)) ?? []
-  if (!s || !features.length) notFound()
+  if (!s) notFound()
+  if (!features.length) return <PermissionDenied />
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">

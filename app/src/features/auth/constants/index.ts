@@ -1,7 +1,6 @@
 import { AUTH_API } from "@/core/config/endpoints"
 
 export const LOGIN_URL = `${AUTH_API}/login/suap`
-export const DEFAULT_AUTHENTICATED_PATH = "/dashboard"
 
 export const LOGIN_ERROR_MESSAGES: Record<string, string> = {
   state_invalido:

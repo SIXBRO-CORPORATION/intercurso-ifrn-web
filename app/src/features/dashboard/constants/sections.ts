@@ -2,9 +2,14 @@ import {
   CalendarRange, GitBranch, LayoutDashboard, Radio, Shield, Trophy, Users, Flag, UserCog,
   type LucideIcon,
 } from "lucide-react"
+import { findRoute, hasRole } from "@/core/routes/match-route"
+import { ROUTES, type RouteKey } from "@/core/routes/route-registry"
+import type { Role, RouteAccess } from "@/core/routes/types"
 
-// Quem pode usar: USER = aluno, MONITOR (ADMIN herda tudo, como no backend).
-export type Role = "USER" | "MONITOR" | "ADMIN"
+type StaticRouteKey = { [K in RouteKey]: (typeof ROUTES)[K]["path"] extends `${string}:${string}` ? never : K }[RouteKey]
+
+const roleOf = (access: RouteAccess): Role => (access === "public" ? "USER" : access.minRole)
+const link = (key: StaticRouteKey) => ({ href: ROUTES[key].path, role: roleOf(ROUTES[key].access) })
 
 export type Feature = { name: string; description: string; role: Role; uc?: string; href?: string }
 export type Section = {
@@ -24,7 +29,7 @@ export const SECTIONS: Section[] = [
     icon: Radio,
     summary: "Acompanhe jogos e resultados sem precisar de login.",
     features: [
-      { name: "Lista de partidas", description: "Jogos paginados com filtro por status (agendado, em andamento, finalizado).", role: "USER", href: "/partidas" },
+      { name: "Lista de partidas", description: "Jogos paginados com filtro por status (agendado, em andamento, finalizado).", ...link("matches") },
       { name: "Detalhe da partida", description: "Placar, sets, eventos e estatísticas dos jogadores.", role: "USER", uc: "UC016" },
       { name: "Feed em tempo real", description: "Gols, pontos, cartões e fim de período chegando por SSE.", role: "USER" },
       { name: "Acompanhar temporada", description: "Visão ao vivo da temporada: jogos e classificação.", role: "USER" },
@@ -48,7 +53,7 @@ export const SECTIONS: Section[] = [
     icon: Trophy,
     summary: "Esportes do Intercurso e suas regras.",
     features: [
-      { name: "Ver modalidades", description: "Modalidades disponíveis com formato e gênero.", role: "USER", href: "/modalidades" },
+      { name: "Ver modalidades", description: "Modalidades disponíveis com formato e gênero.", ...link("modalities") },
       { name: "Cadastrar modalidade", description: "Formato (mata-mata, grupos + mata-mata, pontos corridos, triangular), modo de gênero e configuração, como a de vôlei.", role: "MONITOR", uc: "UC004" },
     ],
   },
@@ -58,7 +63,7 @@ export const SECTIONS: Section[] = [
     icon: Users,
     summary: "Montagem, convites e aprovação dos times.",
     features: [
-      { name: "Minhas equipes", description: "Suas equipes, o status de cada uma e o estado das inscrições.", role: "USER", uc: "UC005", href: "/equipes" },
+      { name: "Minhas equipes", description: "Suas equipes, o status de cada uma e o estado das inscrições.", uc: "UC005", ...link("myTeams") },
       { name: "Criar equipe", description: "Cria o time em rascunho e define o capitão.", role: "USER", uc: "UC005" },
       { name: "Entrar via convite", description: "Link de convite, com regeneração quando necessário.", role: "USER", uc: "UC006" },
       { name: "Gerenciar membros", description: "Adicionar, remover, trocar capitão e sair da equipe.", role: "USER", uc: "UC007" },
@@ -87,7 +92,7 @@ export const SECTIONS: Section[] = [
     icon: Shield,
     summary: "Mesa de controle dos jogos.",
     features: [
-      { name: "Iniciar partida", description: "Muda o jogo para em andamento e dispara o cronômetro.", role: "MONITOR", uc: "UC013", href: "/dashboard/partidas/gerenciar" },
+      { name: "Iniciar partida", description: "Muda o jogo para em andamento e dispara o cronômetro.", uc: "UC013", ...link("manageMatches") },
       { name: "Registrar evento", description: "Gol, ponto, cartão amarelo ou vermelho, expulsão, pênalti, fim de set.", role: "MONITOR", uc: "UC014" },
       { name: "Cronômetro e períodos", description: "Iniciar, pausar e encerrar períodos.", role: "MONITOR", uc: "UC014" },
       { name: "Corrigir evento", description: "Editar ou desfazer um evento lançado errado.", role: "MONITOR", uc: "UC017" },
@@ -117,6 +122,23 @@ export const SECTIONS: Section[] = [
   },
 ]
 
-const RANK: Record<string, number> = { USER: 0, MONITOR: 1, ADMIN: 2 }
-export const canUse = (userRole: string | undefined, needed: Role) =>
-    (RANK[userRole ?? "USER"] ?? 0) >= RANK[needed]
+export const canUse = hasRole
+
+export function sectionOf(pathname: string): Section | undefined {
+  if (findRoute(pathname) === ROUTES.dashboardSection) {
+    const slug = pathname.replace(/\/+$/, "").split("/").pop()
+    return SECTIONS.find((s) => s.slug === slug)
+  }
+  let best: Section | undefined
+  let bestLength = 0
+  for (const section of SECTIONS) {
+    for (const { href } of section.features) {
+      const matches = href && (pathname === href || pathname.startsWith(`${href}/`))
+      if (matches && href.length > bestLength) {
+        best = section
+        bestLength = href.length
+      }
+    }
+  }
+  return best
+}

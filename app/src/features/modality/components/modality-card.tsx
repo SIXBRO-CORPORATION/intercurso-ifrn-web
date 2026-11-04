@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { href } from "@/core/routes/route-registry"
 import { Mars, Users, Venus, VenusAndMars, type LucideIcon } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar"
 import { Badge } from "@/shared/components/ui/badge"
@@ -67,7 +68,7 @@ export function ModalityCard({ modality }: { modality: Modality }) {
           )}
 
           <Button asChild variant="soft" size="sm" className="mt-auto self-start">
-            <Link href={`/modalidades/${encodeURIComponent(modality.modality_id)}/times`}>
+            <Link href={href("modalityTeams", { id: modality.modality_id })}>
               <Users aria-hidden /> Ver times
               <span className="sr-only"> de {modality.name}</span>
             </Link>

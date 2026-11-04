@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LogOut } from "lucide-react"
+import { href } from "@/core/routes/route-registry"
 import { cn } from "@/lib/utils"
 import { Avatar } from "@/shared/components/ui/avatar"
 import { Badge } from "@/shared/components/ui/badge"
@@ -35,12 +36,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </div>
         <nav aria-label="Seções" className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 md:mx-0 md:flex-1 md:flex-col md:gap-1 md:overflow-visible md:px-0 md:pb-0">
           {items.map(({ slug, label, icon: Icon }) => {
-            const href = slug ? `/dashboard/${slug}` : "/dashboard"
-            const active = pathname === href
+            const to = slug ? href("dashboardSection", { section: slug }) : href("dashboard")
+            const active = pathname === to
             return (
               <Link
-                key={href}
-                href={href}
+                key={to}
+                href={to}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex h-10 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-medium whitespace-nowrap outline-none transition duration-150 focus-visible:ring-3 focus-visible:ring-ring/40 md:h-11 md:gap-3 md:text-base",

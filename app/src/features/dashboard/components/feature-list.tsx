@@ -4,7 +4,8 @@ import { cn } from "@/lib/utils"
 import { RevealItem } from "@/shared/components/reveal-item"
 import { Badge } from "@/shared/components/ui/badge"
 import { Card } from "@/shared/components/ui/card"
-import type { Feature, Role } from "../constants/sections"
+import type { Role } from "@/core/routes/types"
+import type { Feature } from "../constants/sections"
 
 const WHO: Record<Role, string> = { USER: "Aluno", MONITOR: "Monitor", ADMIN: "Admin" }
 
