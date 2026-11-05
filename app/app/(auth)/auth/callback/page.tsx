@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/features/auth/contexts/auth-context"
 import { AuthStatusScreen } from "@/features/auth/components/auth-status-screen"
-import { DEFAULT_AUTHENTICATED_PATH } from "@/features/auth/constants"
+import { href } from "@/core/routes/route-registry"
 import { takeReturnPath } from "@/infrastructure/storage/return-to-storage"
 
 export default function AuthCallbackPage() {
@@ -17,8 +17,8 @@ export default function AuthCallbackPage() {
     done.current = true
     router.replace(
         status === "authenticated"
-            ? (takeReturnPath() ?? DEFAULT_AUTHENTICATED_PATH)
-            : "/login?erro=sessao_nao_recuperada",
+            ? (takeReturnPath() ?? href("dashboard"))
+            : `${href("login")}?erro=sessao_nao_recuperada`,
     )
   }, [status, router])
 

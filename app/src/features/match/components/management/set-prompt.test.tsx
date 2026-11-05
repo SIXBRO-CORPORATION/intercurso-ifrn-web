@@ -119,11 +119,31 @@ describe("SetPrompt: fim da partida", () => {
     expect(screen.queryByRole("dialog")).toBeNull()
   })
 
-  it("mantém Finalizar partida desabilitado enquanto não há endpoint", () => {
+  it("Finalizar partida chama finish", async () => {
+    const user = userEvent.setup()
     render(<SetPrompt match={won()} />)
 
-    const finish = screen.getByRole("button", { name: "Finalizar partida" }) as HTMLButtonElement
-    expect(finish.disabled).toBe(true)
+    await user.click(screen.getByRole("button", { name: "Finalizar partida" }))
+
+    expect(action.mutate).toHaveBeenCalledTimes(1)
+    expect(action.mutate).toHaveBeenCalledWith("finish")
+  })
+
+  it("bloqueia os botões e mostra o progresso enquanto finaliza", () => {
+    action.isPending = true
+    render(<SetPrompt match={won()} />)
+
+    expect((screen.getByRole("button", { name: "Finalizando…" }) as HTMLButtonElement).disabled).toBe(true)
+    expect((screen.getByRole("button", { name: "Continuar partida" }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it("mostra o erro do backend e mantém o diálogo aberto", () => {
+    action.isError = true
+    action.error = new Error("falhou")
+    render(<SetPrompt match={won()} />)
+
+    expect(screen.getByRole("alert").textContent).toBe("Não foi possível executar a ação. Tente novamente.")
+    expect(screen.getByRole("dialog", { name: "Finalizar partida?" })).toBeTruthy()
   })
 
   it("Continuar partida fecha o diálogo e não reabre", async () => {

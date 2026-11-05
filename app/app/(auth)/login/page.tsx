@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { href } from "@/core/routes/route-registry"
 import { CircleAlert, Lock, LogIn } from "lucide-react"
 import { BrandMark } from "@/features/auth/components/brand-mark"
 import { LoginButton } from "@/features/auth/components/login-button"
@@ -72,7 +73,7 @@ export default async function LoginPage({
                         </div>
 
                         <Link
-                            href="/"
+                            href={href("home")}
                             className="flex h-12 w-full items-center justify-center rounded-xl border border-brand-200 bg-white text-base font-semibold text-brand-700 transition-colors hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-brand-500/40"
                         >
                             Continuar sem entrar

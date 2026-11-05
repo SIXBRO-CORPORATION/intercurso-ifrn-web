@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
+import { href } from "@/core/routes/route-registry"
 import { useAuth } from "@/features/auth/contexts/auth-context"
 import { SECTIONS, canUse } from "@/features/dashboard/constants/sections"
 import { PageHeader } from "@/shared/components/page-header"
@@ -22,7 +23,7 @@ export default function DashboardPage() {
               asChild
               className="flex h-full flex-col gap-3 p-5 outline-none transition-colors hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/40"
             >
-              <Link href={`/dashboard/${slug}`}>
+              <Link href={href("dashboardSection", { section: slug })}>
                 <span className="grid size-12 place-items-center rounded-full bg-primary-soft text-primary-dark">
                   <Icon className="size-6" aria-hidden />
                 </span>

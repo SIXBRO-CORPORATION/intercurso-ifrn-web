@@ -2,33 +2,13 @@
 
 import { useState } from "react"
 import { Check } from "lucide-react"
-import { Badge } from "@/shared/components/ui/badge"
 import { Button } from "@/shared/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/shared/components/ui/dialog"
 import { useMatchAction } from "../../hooks/use-match-action"
-import type { MatchDetail, MatchTeam } from "../../types/match"
+import type { MatchDetail } from "../../types/match"
 import { parseMatchActionError } from "../../utils/match-action-error"
 import { matchWinner, setSuggestion } from "../../utils/match-sets"
-
-type ResultProps = { team1: MatchTeam; team2: MatchTeam; score1: number; score2: number; winner: MatchTeam; label: string }
-
-function ResultBox({ team1, team2, score1, score2, winner, label }: ResultProps) {
-  return (
-    <div className="space-y-2 rounded-xl bg-field p-5 text-center">
-      <div className="grid grid-cols-2 gap-2">
-        <p className="type-body-lg wrap-break-word font-bold text-ink">{team1.name}</p>
-        <p className="type-body-lg wrap-break-word font-bold text-ink">{team2.name}</p>
-      </div>
-      <p className="type-large-title tabular-nums text-ink">
-        <span className="sr-only">Placar </span>
-        {score1} × {score2}
-      </p>
-      <Badge variant="success">
-        {label}: {winner.name}
-      </Badge>
-    </div>
-  )
-}
+import { ResultBox } from "./finish-match"
 
 export function SetPrompt({ match }: { match: MatchDetail }) {
   const end = useMatchAction(match.match_id)
@@ -41,7 +21,12 @@ export function SetPrompt({ match }: { match: MatchDetail }) {
   if (result) {
     if (dismissedMatch === result.winner.team_id) return null
     return (
-      <Dialog open onOpenChange={(open) => !open && setDismissedMatch(result.winner.team_id)}>
+      <Dialog
+        open
+        onOpenChange={(open) => {
+          if (!open && !end.isPending) setDismissedMatch(result.winner.team_id)
+        }}
+      >
         <DialogContent>
           <DialogTitle>Finalizar partida?</DialogTitle>
           <DialogDescription>Um time atingiu os sets necessários. Confira o resultado ou continue a partida.</DialogDescription>
@@ -53,12 +38,17 @@ export function SetPrompt({ match }: { match: MatchDetail }) {
             winner={result.winner}
             label="Vencedor"
           />
+          {end.isError && (
+            <div role="alert" className="type-body-sm rounded-lg bg-danger-soft px-4 py-3 text-danger">
+              {parseMatchActionError(end.error)}
+            </div>
+          )}
           <DialogFooter>
-            <Button variant="neutral" onClick={() => setDismissedMatch(result.winner.team_id)}>
+            <Button variant="neutral" disabled={end.isPending} onClick={() => setDismissedMatch(result.winner.team_id)}>
               Continuar partida
             </Button>
-            <Button disabled>
-              <Check aria-hidden /> Finalizar partida
+            <Button disabled={end.isPending} onClick={() => end.mutate("finish")}>
+              <Check aria-hidden /> {end.isPending ? "Finalizando…" : "Finalizar partida"}
             </Button>
           </DialogFooter>
         </DialogContent>
