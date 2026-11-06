@@ -1,100 +1,151 @@
-# shadcn/ui
+# UI: shadcn/ui, tokens e design system
 
-## O que é
+Regras para criar e estilizar componentes. Estrutura de pastas em `ARCHITECTURE.md`.
 
-shadcn/ui não é uma dependência de componentes fechada. A CLI copia componentes acessíveis e
-customizáveis para o projeto. O código passa a ser nosso, permitindo ajustar tokens, variantes e
-comportamento sem esperar uma release externa. O projeto usa Tailwind CSS v4 e CSS variables,
-compatíveis com essa abordagem.
+## Resumo operacional
 
-## Configuração deste projeto
+- Tailwind CSS 4 com tokens em CSS (`app/app/globals.css`). **Não existe** `tailwind.config.js`; não
+  criar.
+- Cores, raios, sombras e tipografia vêm de tokens semânticos. Proibido hex, `rgb()` e classes de
+  paleta crua (`bg-green-600`, `text-neutral-500`) em JSX novo.
+- Primitivos shadcn ficam em `src/shared/components/ui/` e são código do projeto (editáveis). Não
+  recebem entidades de domínio.
+- `cn` (merge de classes) vem de `@/lib/utils`.
+- Referência visual das telas: `docs/visual-guidelines/` (PNGs).
 
-`components.json` já está preparado para:
+## Estado do shadcn neste projeto
 
-- componentes em `src/shared/components`;
-- primitivas geradas em `src/shared/components/ui`;
-- utilitário `cn` em `src/shared/utils/cn`;
-- TypeScript, React Server Components e estilo `new-york`;
-- ícones Lucide.
+`app/components.json`:
 
-O alias `@/*` aponta para a raiz de `app`, conforme `tsconfig.json`. O CSS global usado pela CLI
-é `app/globals.css`.
+| Campo | Valor |
+| --- | --- |
+| `style` | `radix-nova` |
+| `rsc` | `true` |
+| `tailwind.config` | vazio (Tailwind 4) |
+| `tailwind.css` | `app/globals.css` |
+| `tailwind.cssVariables` | `true`, `baseColor: neutral` |
+| `iconLibrary` | `lucide` |
+| `aliases.components` / `ui` | `@/shared/components` / `@/shared/components/ui` |
+| `aliases.lib` / `hooks` | `@/lib` / `@/shared/hooks` |
+| `aliases.utils` | `@/shared/utils/cn` — **caminho inexistente** |
 
-## Instalação e configuração
+Divergências conhecidas (atenção ao usar a CLI):
 
-Execute dentro de `app/`:
+- O helper `cn` real é `export { cn } from "cn"` em `src/lib/utils.ts` (pacote npm `cn`). Os
+  primitivos de `ui/` e vários componentes importam `cn` diretamente de `"cn"`; código novo usa
+  `@/lib/utils`. Componentes gerados pela CLI trazem `@/shared/utils/cn`: corrigir o import para
+  `@/lib/utils` (ou ajustar `aliases.utils` no `components.json` para `@/lib/utils`).
+- Os primitivos existentes foram **adaptados** ao design do produto (botão pill com gradiente,
+  variantes próprias). Não regenerar por cima com `shadcn add --overwrite`.
+- `Slot` vem de `radix-ui` (`import { Slot } from "radix-ui"`).
 
-```bash
-npm install class-variance-authority clsx tailwind-merge lucide-react
-npx shadcn@latest init
-```
+### Primitivos presentes em `ui/`
 
-Quando a CLI perguntar, mantenha TypeScript, Tailwind CSS, CSS variables e os aliases já
-registrados em `components.json`. Como este projeto usa Tailwind v4, não crie `tailwind.config.js`
-sem uma necessidade específica.
+`alert`, `avatar`, `badge`, `button`, `calendar`, `card`, `chip`, `date-picker`, `dialog`, `empty`,
+`field-class` (classes comuns de campo), `popover`, `progress`, `skeleton`. Verificar a pasta antes de
+adicionar algo para evitar duplicação.
 
-O arquivo `src/shared/utils/cn.ts` pode então conter o helper padrão:
+Variantes existentes (cva):
 
-```ts
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+| Componente | Variantes |
+| --- | --- |
+| `Button` `variant` | `default`, `outline`, `soft`, `neutral`, `danger`, `danger-soft`, `warning`, `dark`, `ghost`, `link` |
+| `Button` `size` | `default` (h-12), `lg`, `sm`, `icon`, `icon-sm`, `icon-lg` |
+| `Badge` `variant` | `neutral`, `success`, `danger`, `warning`, `dark` |
+| `Alert` `variant` | `default`, `destructive`, `success`, `warning` |
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-```
+`Button` aceita `asChild` (renderiza o filho, p.ex. `<Link>` ou `<a>`).
 
-Se a CLI perguntar pelo caminho do CSS, informe `app/globals.css`; para componentes, informe
-`src/shared/components`; para utilitários, `src/shared/utils`; e para hooks, `src/shared/hooks`.
-Como o Tailwind está na versão 4, mantenha o campo `config` vazio e não crie
-`tailwind.config.js` apenas para satisfazer a CLI.
+## Tokens (`app/app/globals.css`)
 
-## Adicionando componentes
+Três blocos: `:root` (valores), `@theme inline` (mapeia variáveis para utilitários Tailwind) e
+`@theme` (raios e sombras), além de `@utility` para a escala tipográfica.
 
-```bash
-npx shadcn@latest add button card dialog form input label
-```
+### Cores semânticas
 
-Os arquivos serão criados em `src/shared/components/ui`. Revise o código gerado, aplique os
-tokens institucionais em `app/globals.css` e só então use o componente numa feature:
+| Uso | Utilitários |
+| --- | --- |
+| Fundo da página / texto base | `bg-background`, `text-foreground` (`text-ink`) |
+| Superfície / cartão | `bg-card` (`bg-surface`), `text-card-foreground` |
+| Ação primária | `bg-primary`, `text-primary-foreground`, `text-primary-dark`, `bg-action`, `hover:bg-action-hover` |
+| Tons suaves da marca | `bg-primary-soft`, `bg-primary-muted`, `bg-secondary`, `bg-accent` |
+| Texto secundário / apagado | `text-muted-foreground`, `text-text-secondary`, `text-faint` |
+| Campo / fundo neutro | `bg-field` (`bg-muted`) |
+| Borda / input / foco | `border-border`, `border-input`, `ring-ring` |
+| Erro | `text-destructive` (`text-danger`), `bg-danger-soft` |
+| Aviso | `bg-warning`, `bg-warning-soft`, `text-warning-text` |
+| Marca (legado, mapeado para os tokens acima) | `brand-50/100/200/500/600/700/800/900` |
 
-```tsx
-import { Button } from "@/shared/components/ui/button";
-```
+- Verde da marca: `--primary` (`#2f9e41`); versão escura `--primary-dark`.
+- Escala `brand-*` existe por compatibilidade (login). Preferir os tokens semânticos em código novo.
+- Para nova cor: definir a variável em `:root`, mapear em `@theme inline` (`--color-<nome>`) e usar o
+  utilitário. Nunca colocar o valor direto no componente.
+- Modo escuro: há apenas `@custom-variant dark`; o tema é claro. Não depender de `dark:`.
 
-Componentes de negócio não devem ser adicionados à pasta `ui`. Componha um componente específico
-em `src/features/<feature>/components` usando os primitivos compartilhados.
+### Raios, sombras, medidas
 
-## Regras de uso
+- Raios: `rounded-xs/sm/md/lg/xl/2xl` (0,5 → 1,875rem); `--radius` base 1rem.
+- Sombras: `shadow-sm/md/lg`, `shadow-card`, `shadow-sheet`, `shadow-primary`.
+- Medidas: `--sidebar-width`, `--topbar-height`, `--navbar-height`, `--container-public`.
 
-1. Não editar `node_modules` nem depender de componentes remotos em runtime.
-2. Não copiar manualmente o mesmo primitive para uma feature.
-3. Manter `Button`, `Input`, `Dialog` e equivalentes agnósticos de domínio.
-4. Preservar acessibilidade e os estados de foco, disabled, erro e loading.
-5. Atualizar dependências com o gerenciador do projeto e executar lint/build depois de adicionar
-   componentes.
-6. Quando personalizar um componente gerado, registrar a decisão nos tokens ou na documentação
-   de design system, não em estilos inline espalhados.
+### Tipografia
 
-## Fluxo recomendado
+Fonte Poppins (variável `--font-poppins`, carregada em `app/layout.tsx`, pesos 400/500/700).
+Escala por utilitários próprios, em vez de combinar `text-*`/`font-*`:
 
-1. Definir o token visual em `app/globals.css`.
-2. Adicionar o primitive com a CLI.
-3. Revisar tipos, acessibilidade e variantes.
-4. Compor a UI específica dentro da feature.
-5. Validar `npm run lint` e `npm run build`.
+`type-large-title`, `type-title`, `type-heading`, `type-section`, `type-body-lg`, `type-body`,
+`type-body-sm`, `type-label`, `type-caption`, `type-overline`, `type-button`, `type-score`,
+`type-timer`, `type-display`, `type-h1`…`type-h4`.
 
-## Instalação resumida
+Títulos de página: `PageHeader` (`@/shared/components/page-header`) usa `type-large-title`.
+
+### Foco
+
+`focus-visible:ring-3 focus-visible:ring-ring/40` nos primitivos, ou o utilitário `focus-ring`.
+Elemento interativo novo mantém foco visível.
+
+## Componentes compartilhados (`src/shared/components/`)
+
+`back-button`, `live-dot`, `page-header`, `request-states` (`GridSkeleton`, `ErrorState`,
+`EmptyState`), `reveal-item`. Entram aqui apenas componentes sem domínio usados por duas ou mais
+features. Componente com regra de domínio fica em `features/<f>/components`.
+
+## Adicionar um primitivo
 
 ```bash
 cd app
-npm install class-variance-authority clsx tailwind-merge lucide-react
-npx shadcn@latest init
-npx shadcn@latest add button
-npm run lint
-npm run build
+npx shadcn@latest add <componente>
 ```
 
-O `init` configura o projeto, mas não instala todos os componentes. Cada comando `add` copia os
-arquivos do componente solicitado para o repositório; revise e versione esse código junto com a
-aplicação.
+1. Conferir se já existe em `ui/` ou se `shared/components` resolve.
+2. A CLI cria o arquivo em `src/shared/components/ui/`. Corrigir o import de `cn` (ver acima).
+3. Trocar cores/raios padrão por tokens do projeto; alinhar variantes às existentes (pill, estados
+   `disabled`, foco).
+4. Manter genérico: sem props de domínio. Variante nova entra no `cva` do próprio primitivo.
+5. Garantir acessibilidade: foco, estados `disabled`/erro/carregando, `aria-*` herdados do Radix.
+6. Componente que depende de `radix-ui` usa o pacote único `radix-ui`.
+7. Rodar `lint`, `typecheck`, `test` e `build`.
+
+## Regras de uso
+
+- Não editar `node_modules` nem depender de componente remoto em runtime.
+- Não copiar um primitivo para dentro de uma feature; reutilizar ou estender o de `ui/`.
+- Diferença só de aparência: variante ou `className`, não componente duplicado.
+- Ícones: `lucide-react`, com `aria-hidden` quando decorativos; traço global em `svg.lucide`
+  (`stroke-width: 2.2`).
+- Responsivo mobile-first (breakpoints `sm:`/`md:`/`lg:`); o painel alterna barra superior e sidebar
+  em `md`.
+- Texto de interface em pt-BR.
+
+## Referência visual
+
+`docs/visual-guidelines/` contém imagens de referência (não são código):
+
+| Pasta | Conteúdo |
+| --- | --- |
+| `00_design-system` | fundamentos, componentes, padrões, ícones e responsivo |
+| `01_site-publico-e-aluno` | telas `W01`–`W13` (login, jogos, partida ao vivo, chaves, equipes, convite, perfil) |
+| `02_painel-monitor` | telas `M01`–`M17` (painel, temporada, modalidades, equipes, chaveamento, console da partida) |
+| `03_visao-geral` | mapas gerais das duas áreas |
+
+Consultar a imagem correspondente (`Read` em PNG) somente ao implementar ou ajustar aquela tela.

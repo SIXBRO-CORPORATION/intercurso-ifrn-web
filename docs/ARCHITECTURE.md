@@ -1,200 +1,240 @@
-# Arquitetura — Intercurso IFRN Web
+# Arquitetura
 
-## Objetivo
+Organização de pastas, direção das dependências, fluxo de dados e receita para criar uma feature.
+Todo o código executável fica em `app/`; os caminhos abaixo são relativos a essa pasta. Rotas e
+acesso estão em `ROUTING.md`; sessão em `AUTH.md`; tempo real em `REALTIME.md`.
 
-O projeto usa **Component-Driven Development** na apresentação, **Feature-Sliced Design**
-para organizar o domínio e o App Router do Next.js para composição de rotas. A regra principal
-é manter cada responsabilidade próxima do código que a utiliza, expondo apenas contratos
-necessários para outras camadas.
+## Resumo operacional
 
-## Estrutura
+- Três camadas principais: `app/` (rotas finas) → `src/features/` (domínio) → `src/infrastructure/`
+  (detalhes técnicos). `src/core/` guarda contratos globais; `src/shared/` guarda código sem domínio.
+- Uma feature é uma fatia vertical de domínio (`match`, `modality`, `season`, `team`, `auth`,
+  `dashboard`). Contém UI, hooks, repositório, schemas e utilidades do próprio domínio.
+- Dados externos seguem sempre: **componente → hook (TanStack Query) → repository (axios + Zod) →
+  backend**.
+- Páginas e layouts não têm regra de negócio.
+- Uma feature importa outra somente pelo `index.ts` público dela.
+
+## Mapa de pastas
 
 ```text
-app/                         # Next.js App Router: rotas, layouts, metadata e endpoints
-├── (public)/                # grupo de rotas públicas
-├── (auth)/                  # grupo de autenticação
-├── (dashboard)/             # grupo autenticado
-└── api/                     # Route Handlers (quando necessário)
-src/
-├── core/                    # regras transversais e estado global
-│   ├── auth/
-│   ├── http/
-│   ├── realtime/
-│   └── errors/
-├── features/                # fatias verticais por caso de uso/domínio
-│   └── _template/           # esqueleto para criar novas features
-├── infrastructure/          # detalhes externos e implementações técnicas
-│   ├── http/
-│   ├── realtime/
-│   └── storage/
-├── shared/                  # código agnóstico de domínio, reutilizado
-│   ├── components/          # componentes visuais compartilhados
-│   │   └── ui/              # componentes instalados/customizados do shadcn/ui
-│   ├── hooks/
-│   ├── models/
-│   ├── schemas/
-│   ├── types/
-│   └── utils/
-├── assets/                  # recursos importados pelo código
-├── config/                  # configuração de ambiente e runtime
-├── constants/               # constantes globais
-├── lib/                     # bootstrap/configuração de bibliotecas
-├── styles/                  # tokens e estilos compartilhados
-└── tests/                   # setup, mocks e testes cross-feature
+app/
+├── app/                       # App Router (somente rotas, layouts, metadata, globals.css)
+│   ├── layout.tsx             # raiz: QueryProvider > AuthProvider
+│   ├── (public)/              # sem login obrigatório
+│   ├── (auth)/                # login e callback do SUAP
+│   ├── (dashboard)/           # painel autenticado: layout com AuthGuard + AccessGate
+│   └── api/                   # reservado (Route Handlers); vazio
+├── proxy.ts                   # barra caminhos fora do registro de rotas
+└── src/
+    ├── core/                  # contratos globais, sem dependência do projeto
+    │   ├── routes/            # route-registry, types, match-route (ver ROUTING.md)
+    │   ├── auth/              # session-store (estado de sessão em memória)
+    │   ├── realtime/          # tipos do cliente SSE
+    │   └── config/endpoints/  # constantes dos endpoints (/api/...)
+    ├── features/              # fatias de domínio
+    │   ├── auth/  dashboard/  match/  modality/  season/  team/
+    ├── infrastructure/        # integrações técnicas
+    │   ├── realtime/          # cliente SSE (ticket, reconexão, validação)
+    │   └── storage/           # sessionStorage (caminho de retorno)
+    ├── lib/                   # configuração de bibliotecas: axios, QueryProvider, cn, iso-date
+    ├── shared/                # sem domínio
+    │   ├── components/        # compartilhados (+ ui/ do shadcn)
+    │   ├── schemas/           # envelope-schema
+    │   └── utils/
+    ├── assets/                # imagens importadas (logos, favicon)
+    └── tests/                 # setup do Vitest e fixtures compartilhadas
 ```
+
+Pastas contendo apenas `.gitkeep` são reservadas, sem código: `core/http`, `core/errors`, `config`,
+`constants`, `infrastructure/http`, `shared/hooks`, `shared/models`, `shared/types`, `styles`,
+`app/api`. Criar conteúdo nelas só quando houver necessidade concreta, removendo o `.gitkeep`.
+
+## Camadas e direção das dependências
+
+```text
+app/  →  features/  →  infrastructure/
+  ↘          ↘             ↘
+        shared/  ←──  core/
+```
+
+| Camada | Pode importar | Não pode importar |
+| --- | --- | --- |
+| `core/` | nada do projeto | qualquer outra camada; `axios`, `fetch`, `EventSource`, `localStorage` |
+| `shared/` | `core`, `lib` | `features`, `infrastructure`, `app` |
+| `infrastructure/` | `core`, `lib` | `features`, `shared/components`, `app` |
+| `features/<x>` | `core`, `shared`, `lib`, `infrastructure`, `features/<y>` (só pelo `index.ts`) | internos de outra feature, `app` |
+| `app/` | tudo acima | — (mas continua fino) |
+
+- `core` define **o quê** a aplicação precisa; `infrastructure` define **como** executar;
+  `features` define **por quê e quando**.
+- `lib/` configura bibliotecas (instância `api`, `QueryClient`, `cn`). Pode ser importado por
+  qualquer camada exceto `core`.
+- Alias `@/*` → `src/*` (`tsconfig.json`). Usar `@/` em vez de caminhos relativos que subam
+  pastas; dentro da mesma feature, caminho relativo curto (`../schemas/x`) é aceito.
+- Código compartilhado entre duas features: se não tem domínio, vai para `shared`; se tem, expor
+  pelo `index.ts` da feature dona ou extrair um novo domínio. Nunca importar arquivo interno.
+
+### `index.ts` público
+
+Hoje existem em `features/modality/index.ts` e `features/season/index.ts`, exportando apenas o que
+outras features consomem (hooks, tipos, utilitários). Criar um `index.ts` quando outra feature
+passar a depender de algo; exportar o mínimo. Importações entre features usam
+`@/features/<nome>` (sem subcaminho).
 
 ## Anatomia de uma feature
 
-Cada feature pode ter somente as pastas que realmente precisar:
+Cada feature tem só as pastas de que precisa:
 
 ```text
-src/features/teams/
-├── components/              # UI que conhece o domínio de teams
-├── contexts/                # estado/contexto React exclusivo da feature
-├── hooks/                   # hooks de interação/cache da feature
-├── models/                  # entidades e regras do domínio
-├── repositories/            # contratos de dados específicos da feature
-├── schemas/                 # validação de entrada/saída
-├── services/                # casos de uso e orquestração
-├── types/                   # tipos públicos da feature
-└── utils/                   # helpers exclusivos da feature
+src/features/<dominio>/
+├── components/      # UI que conhece o domínio (views, cards, dialogs, listas)
+├── constants/       # valores estáveis do domínio (rótulos, opções, nomes de eventos, tamanhos)
+├── contexts/        # React Context exclusivo da feature (provider + hook tipado)
+├── hooks/           # useQuery/useMutation, assinatura de realtime, estado de tela
+├── repositories/    # chamadas HTTP + validação Zod
+├── schemas/         # Zod: contratos da API e de formulários
+├── services/        # orquestração sem React (usado em auth)
+├── types/           # tipos públicos que não vêm de schema
+├── utils/           # funções puras do domínio (formatação, regras, mapeamento de erro)
+└── index.ts         # contrato público (somente se outras features consomem)
 ```
 
-Os domínios esperados seguem o backend: `auth`, `users`, `season`, `modality`, `team`, `bracket`
-e `match`. Uma feature representa um domínio/capacidade vertical, não uma camada técnica.
-Por exemplo, uma operação de criação de equipe pode envolver `components`, `schemas`, `services`,
-`repositories` e `types` dentro de `features/team`.
+Estado real: `match` (components, constants, hooks, repositories, schemas, types, utils),
+`modality`/`team`/`season` (subconjuntos), `auth` (components, constants, contexts, hooks,
+services), `dashboard` (components, constants).
 
-### `constants` dentro de uma feature
+### Responsabilidade de cada pasta
 
-`src/features/<feature>/constants` contém valores estáveis, nomeados e exclusivos daquele
-domínio. Exemplos: limites de membros de uma equipe, labels de status de partida, opções de
-filtro de uma modalidade e chaves de query da feature.
+| Pasta | Contém | Regras |
+| --- | --- | --- |
+| `repositories/` | funções `async` que chamam `api` e devolvem dados já validados | único lugar com HTTP; recebe `AbortSignal` em leituras; sem React |
+| `schemas/` | schemas Zod e tipos inferidos (`z.infer`) | o tipo do domínio nasce do schema; nomes terminam em `Schema` |
+| `hooks/` | `useQuery`, `useMutation`, `connectRealtime` | chaves de query definidas aqui; sem JSX |
+| `utils/` | funções puras e testáveis | sem React, sem HTTP; erros de API traduzidos para texto em português ficam aqui (`*-error.ts`) |
+| `constants/` | rótulos, listas, limites | texto de UI em português; sem dados vindos da API |
+| `components/` | views e peças de UI | consomem hooks; tratam os 4 estados (ver abaixo) |
+| `contexts/` | estado de UI compartilhado na feature | provider + hook que lança erro fora do provider; nunca para cache de servidor |
+| `services/` | regras sem UI | usar só quando houver orquestração que não cabe em hook nem util |
 
-Use `src/constants` somente quando o valor for realmente global e compartilhado por vários
-domínios. Não coloque ali regras de negócio executáveis, dados vindos da API, secrets ou
-configuração de ambiente. Valores configuráveis por ambiente pertencem a `src/config`.
+Sufixos de arquivo: `*-view.tsx` (componente de tela que consome dados), `*-list.tsx`,
+`*-card.tsx`, `*-dialog.tsx`, `use-*.ts`, `*-repository.ts`, `*-schema.ts`.
 
-### `contexts` dentro de uma feature
-
-`src/features/<feature>/contexts` contém React Contexts usados apenas por aquela feature, como
-filtros de uma tela, wizard de criação ou estado de seleção de uma chave. O Context deve expor
-um provider e um hook tipado, tratar uso fora do provider explicitamente e ficar em um Client
-Component quando depender de estado/eventos.
-
-Não use um context de feature para cache de servidor (prefira TanStack Query) nem para estado
-global sem uma necessidade clara. Se duas features precisam
-do mesmo contexto, ele deve ser reavaliado como código compartilhado ou movido para `core`.
-
-### Realtime
-
-O backend expõe eventos em tempo real, portanto a arquitetura do frontend separa:
+## Fluxo de dados
 
 ```text
-src/infrastructure/realtime/       # conexão, transporte e ciclo de vida técnico
-src/features/match/hooks/           # consumo de eventos na feature de partidas
-src/features/match/contexts/        # estado visual compartilhado, se necessário
-src/features/match/services/        # transformação e aplicação da regra de negócio
+page.tsx (fina) → <XView> (feature/components)
+                    → useX()  (feature/hooks, TanStack Query)
+                        → listX()  (feature/repositories)
+                            → api.get(ENDPOINT)  (@/lib/axios)
+                            → schema.parse(data)  (feature/schemas)
 ```
 
-Por exemplo, `src/infrastructure/realtime/season-events-client.ts` pode abrir uma conexão SSE
-e devolver eventos tipados. Ele não deve atualizar diretamente componentes, conhecer a tela ou
-decidir regras de partida. A feature consumidora interpreta o evento.
+### Repositório
 
-Use:
+```ts
+import { MODALITY_API } from "@/core/config/endpoints"
+import { api } from "@/lib/axios"
+import { modalityListSchema } from "../schemas/modality-schema"
 
-- `src/infrastructure/realtime` para SSE, WebSocket, reconexão, heartbeat, autenticação do
-  canal, cancelamento e normalização do envelope técnico;
-- `src/features/<feature>/hooks` para assinar o canal e expor loading, conexão e erro à UI;
-- `src/features/<feature>/services` para aplicar o evento ao modelo ou invalidar cache;
-- `src/core/realtime` somente para políticas realmente globais, como um provider de conexão,
-  registry de canais ou telemetria transversal.
-
-Não coloque todo realtime em `core`: o transporte é infraestrutura e o significado do evento
-pertence à feature que o consome.
-
-### Correspondência com o backend
-
-| Backend | Frontend |
-| --- | --- |
-| `domain/<domínio>` | `src/features/<domínio>/models`, `types`, `schemas` |
-| `business/<domínio>` | `src/features/<domínio>/services` |
-| `persistence/` | repositórios dentro da própria feature |
-| `core/realtime` | `src/infrastructure/realtime` + hooks/contexts da feature consumidora |
-| `web/controllers` e `web/models` | `app/` + `features/<domínio>/components` |
-| `core/` | `src/core/` |
-| `security/` | `src/core/auth` + `src/infrastructure` |
-
-## Core e infraestrutura
-
-O princípio é:
-
-```text
-core define o que a aplicação precisa
-infrastructure define como isso é executado
-features definem por que e quando isso é usado
+export async function listModalities(seasonId: string | undefined, signal: AbortSignal) {
+  const { data } = await api.get(MODALITY_API, { params: seasonId ? { season_id: seasonId } : undefined, signal })
+  return modalityListSchema.parse(data).data ?? []
+}
 ```
 
-### Responsabilidades recomendadas
+- Endpoints vêm de `@/core/config/endpoints` (constantes `*_API`). Parâmetros de caminho passam por
+  `encodeURIComponent`.
+- Toda resposta é validada com `schema.parse` **antes** de sair do repositório. A API responde num
+  envelope `{ data: ... }`; usar `envelopeSchema(...)` de `@/shared/schemas/envelope-schema`.
+- Erro esperado (ex.: 404 de recurso inexistente) pode ser convertido em `null` no repositório
+  (`getMatch`); os demais propagam.
+- Nomes de campo dos schemas seguem o backend (`snake_case`: `modality_id`, `min_members`).
 
-| Área | Responsabilidade |
-| --- | --- |
-| `core/auth`, `core/http`, `core/realtime`, `core/errors` | regras e contratos globais |
-| `infrastructure/http` | cliente HTTP e configuração de transporte |
-| `infrastructure/realtime` | SSE, WebSocket, reconexão e heartbeat |
-| `infrastructure/storage` | cookies, localStorage e sessionStorage |
+### Hook de leitura e de escrita
 
-Repositórios e persistência ficam dentro da própria feature. Não criar uma camada global de
-repositórios em `infrastructure` enquanto não houver uma necessidade concreta compartilhada.
-
-Uma página em `app/` deve ser fina: buscar parâmetros, compor providers e renderizar componentes
-da feature. Regra de negócio não deve ser criada dentro de `page.tsx`, `layout.tsx` ou
-`route.ts`.
-
-## Dependência entre camadas
-
-```text
-app → features → infrastructure
-  ↘ shared ← core
+```ts
+export function useModalities(seasonId?: string) {
+  return useQuery({
+    queryKey: ["modalities", seasonId ?? "all"],
+    queryFn: ({ signal }) => listModalities(seasonId, signal),
+  })
+}
 ```
 
-- `shared` não importa features, `app` ou detalhes de infraestrutura.
-- Uma feature pode usar `shared`, `core` e contratos de `infrastructure`, mas outra feature não
-  deve importar arquivos internos dela. Compartilhe um contrato em `shared` ou extraia um domínio.
-- `infrastructure` contém integrações técnicas; o domínio não deve depender de SDKs diretamente.
-- `infrastructure/realtime` contém somente o transporte e a integração externa de eventos, como
-  conexão SSE/WebSocket, reconexão, parsing do evento e encerramento da conexão.
-- `core` pode ser usado por todas as camadas, mas não deve virar um depósito de componentes de
-  uma feature.
-- Imports usam o alias `@/` configurado no `tsconfig.json`; prefira imports por arquivo explícito.
+- Hooks são Client Components (`"use client"`).
+- A chave de query inclui todos os parâmetros que alteram o resultado. Chaves existentes:
+  `["match", id]`, `["matches", query]`, `["modalities", seasonId|"all"]`.
+- Padrões do `QueryClient` (`lib/query-provider.tsx`): `retry: false`, `staleTime: 30_000`,
+  `refetchOnWindowFocus: false`. Sobrescrever por hook só com motivo.
+- Mutações usam `useMutation`; ao concluir, gravam o resultado com `setQueryData` e/ou invalidam a
+  chave (`useMatchAction`).
+
+### Estados de UI
+
+Tela que consome dados trata **carregamento, erro, vazio e sucesso** com os componentes de
+`@/shared/components/request-states`: `GridSkeleton`, `ErrorState` (com `onRetry`), `EmptyState`.
+Cada `*-view.tsx` decide qual exibir a partir de `isPending`/`isError`/dados vazios.
+
+### Páginas finas
+
+`page.tsx`, `layout.tsx` e `route.ts` apenas: ler `params`/`searchParams` (Promises), definir
+`metadata`, montar o layout da página e renderizar componentes da feature. Exemplo:
+`app/(public)/partidas/[id]/page.tsx` renderiza `<MatchDetailView id={id} />`.
+
+## Server × Client Components
+
+- Padrão: Server Component. Adicionar `"use client"` apenas com estado, efeito, evento de browser
+  ou API client-only.
+- Sessão, TanStack Query e realtime só existem no cliente; qualquer componente que use `useAuth`,
+  `useQuery` ou `connectRealtime` é Client Component.
+- Providers globais ficam em `app/layout.tsx`.
 
 ## Component-Driven Development
 
-1. Comece pelo contrato visual (props, estados de loading/erro/vazio e acessibilidade).
-2. Crie componentes pequenos e composáveis em `shared/components` quando forem agnósticos.
-3. Coloque composição com regra de negócio em `features/<nome>/components`.
-4. Os componentes de `shared/components/ui` devem permanecer genéricos; não recebem entidades
-   de uma feature.
-5. Estados e variações importantes devem ser testáveis sem depender de uma página inteira.
+1. Definir o contrato visual: props, estados (carregando/erro/vazio) e acessibilidade.
+2. Componente sem domínio e reutilizável em ≥ 2 features → `shared/components`. Com domínio →
+   `features/<x>/components`.
+3. `shared/components/ui` contém primitivos genéricos (shadcn); não recebem entidades de domínio.
+4. Estados e variações devem ser testáveis sem montar a página inteira (ver `CONVENTIONS.md`).
 
-## Testes
+## Realtime
 
-Testes ficam colocalizados com o arquivo testado, usando o sufixo `.test`:
+Divisão de responsabilidades (detalhes e contrato em `REALTIME.md`):
 
-```text
-src/features/team/services/create-team.ts
-src/features/team/services/create-team.test.ts
+- `infrastructure/realtime`: transporte (ticket, `EventSource`, reconexão, parsing do envelope).
+  Desconhece telas e regras.
+- `features/<x>/hooks`: assina o canal e expõe status à UI.
+- Interpretação do evento (gravar no cache, invalidar) pertence à feature consumidora.
+- `core/realtime`: apenas tipos/contratos.
 
-src/shared/components/team-card.tsx
-src/shared/components/team-card.test.tsx
-```
+## Criar uma feature nova
 
-Use testes unitários para funções, schemas, services e hooks; testes de componente para
-interações e acessibilidade; e reserve `src/tests` para setup, mocks compartilhados e cenários
-cross-feature. Não crie uma pasta `tests` dentro de cada feature apenas para agrupar testes.
+1. Criar `src/features/<dominio>/` com somente as pastas necessárias; nome acompanha o domínio do
+   backend (`auth`, `users`, `season`, `modality`, `team`, `bracket`, `match`), no singular.
+2. Declarar endpoint em `src/core/config/endpoints/index.ts`.
+3. Escrever o schema Zod (envelope + entidade) em `schemas/`.
+4. Escrever o repositório em `repositories/` (`api` + `parse`).
+5. Escrever os hooks em `hooks/` (query key explícita).
+6. Construir a view em `components/` tratando os quatro estados.
+7. Criar a página em `app/` e registrar a rota (`ROUTING.md`); manter a página fina.
+8. Escrever testes colocalizados (repositório, schema, utils; componente quando houver interação).
+9. Se outra feature precisar de algo, expor no `index.ts`.
+10. Validar com `lint`, `typecheck`, `test` e `build`.
 
-## Rotas e páginas
+Domínios ainda inexistentes no front: `users`, `bracket`. Itens de
+`features/dashboard/constants/sections.ts` sem `href` representam telas futuras.
 
-Os grupos em `app/` são apenas uma convenção inicial. Adicione uma pasta de rota quando existir
-uma tela real e remova o `.gitkeep` correspondente. O `app/page.tsx` atual continua sendo a rota
-raiz até que a home seja movida para um grupo de rotas.
+## Correspondência com o backend
+
+| Backend (`intercurso-ifrn-backend`) | Frontend |
+| --- | --- |
+| `domain/<domínio>` | `features/<domínio>/schemas` e `types` |
+| `business/<domínio>` | `features/<domínio>/utils`, `hooks` e `services` |
+| `persistence/` | `features/<domínio>/repositories` |
+| `core/realtime` | `infrastructure/realtime` + hooks da feature |
+| `web/controllers` | `app/` + `features/<domínio>/components` |
+| `security/` | `core/auth` + `features/auth` |
+
+O backend é consumido por `/api/*`, reescrito para `NEXT_API_URL` (padrão `http://localhost:8000`) em
+`next.config.ts`; `NEXT_PUBLIC_API_URL` define o `baseURL` do axios.
