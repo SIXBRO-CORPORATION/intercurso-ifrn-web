@@ -102,8 +102,9 @@ app/
   `app/api`.
 - Os domínios `users` e `bracket` ainda não existem no frontend. Itens de
   `features/dashboard/constants/sections.ts` sem `href` representam telas futuras.
-- `NEW_TEAM_PATH` (`/equipes/nova`) e o link de `my-team-card.tsx` (`/equipes/:id`) apontam para
-  telas ainda não registradas e resultam em 404 até a rota existir.
+- A criação de equipe é um diálogo em `/equipes` (`create-team-dialog.tsx`), sem rota própria. O link
+  de `my-team-card.tsx` (`/equipes/:id`) e o link de convite gerado (`TEAM_INVITE_PATH`, `/convite/:token`)
+  apontam para telas ainda não registradas e resultam em 404 até a rota existir.
 - `app/vitest.config.ts` (com os projetos `unit` e `components`) é a configuração efetiva do Vitest;
   `app/vitest.config.mts` é redundante e não é usada.
 - Primitivos de `shared/components/ui` importam `cn` do pacote `cn`; `aliases.utils` do
