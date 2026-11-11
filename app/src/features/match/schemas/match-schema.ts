@@ -68,6 +68,7 @@ const modalityConfigurationSchema = z.object({
 })
 
 export const matchDetailSchema = matchSchema.extend({
+  penalty_shootout_active: z.boolean().default(false),
   modality_configuration: modalityConfigurationSchema.nullish(),
   sets: z.array(matchSetSchema),
   team1_players: z.array(matchPlayerSchema),

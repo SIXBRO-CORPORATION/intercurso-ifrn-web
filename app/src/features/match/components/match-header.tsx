@@ -3,6 +3,7 @@ import { Avatar } from "@/shared/components/ui/avatar"
 import { STATUS_OPTIONS } from "../constants"
 import type { MatchDetail, MatchTeam } from "../types/match"
 import { formatScheduledDate, matchClockLimit, isVolleyMatch, periodLabel, phaseLabel } from "../utils/match-card"
+import { hasShootout, withPenalties } from "../utils/match-penalties"
 import { LiveClock } from "./live-clock"
 
 function Team({ team }: { team: MatchTeam | null }) {
@@ -17,11 +18,11 @@ function Team({ team }: { team: MatchTeam | null }) {
 export function MatchHeader({ match }: { match: MatchDetail }) {
   const { team1, team2, status } = match
   const volley = isVolleyMatch(match)
-  const shootout = team1?.penalty_score != null && team2?.penalty_score != null
+  const shootout = hasShootout(match)
   const live = status === "IN_PROGRESS"
   const currentSet = volley && live
-  const main = (t: MatchTeam | null) => (t && status !== "SCHEDULED" ? ((volley && !live ? t.sets_won : t.score) ?? "–") : "–")
-  const penalty = (t: MatchTeam | null) => shootout && <span className="text-2xl"> ({t?.penalty_score})</span>
+  const main = (t: MatchTeam | null) =>
+    withPenalties(t && status !== "SCHEDULED" ? ((volley && !live ? t.sets_won : t.score) ?? "–") : "–", t, shootout)
 
   const phase = phaseLabel(match)
   const date = formatScheduledDate(match.scheduled_date)
@@ -47,9 +48,7 @@ export function MatchHeader({ match }: { match: MatchDetail }) {
         <div className="flex flex-col items-center gap-1">
           <p className="type-score">
             <span className="sr-only">{currentSet ? "Placar do set atual " : "Placar "}</span>
-            {main(team1)}
-            {penalty(team1)} – {main(team2)}
-            {penalty(team2)}
+            {main(team1)} – {main(team2)}
           </p>
           {currentSet && team1 && team2 && (
             <>
