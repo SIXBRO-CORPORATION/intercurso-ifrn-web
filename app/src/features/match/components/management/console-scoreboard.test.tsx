@@ -31,6 +31,19 @@ describe("ConsoleScoreboard: partida finalizada", () => {
     expect(screen.getByText("3 – 1")).toBeTruthy()
   })
 
+  it("mostra o resultado com pênaltis no formato X(p) – Y(p)", () => {
+    render(
+      <ConsoleScoreboard
+        match={finished({ score: [2, 2], setsWon: null, winnerId: "t1", category: "KNOCKOUT", penalty: [5, 4] })}
+        onPlay={noop}
+        onEndPeriod={noop}
+      />,
+    )
+
+    expect(screen.getByText("2(5) – 2(4)")).toBeTruthy()
+    expect(screen.getByText("Vencedor: Falcões")).toBeTruthy()
+  })
+
   it("deixa de oferecer ações de registro", () => {
     render(<ConsoleScoreboard match={finished({ score: [2, 1], setsWon: null, winnerId: "t1" })} onPlay={noop} onEndPeriod={noop} />)
 

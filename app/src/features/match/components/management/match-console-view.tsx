@@ -17,8 +17,11 @@ import { ConnectionBadge } from "./connection-badge"
 import { ConsoleRoster } from "./console-roster"
 import { ConsoleScoreboard } from "./console-scoreboard"
 import { EndPeriodDialog } from "./end-period-dialog"
+import { EndShootout } from "./end-shootout"
 import { EventDialog } from "./event-dialog"
 import { FinishMatch } from "./finish-match"
+import { PenaltyKicks } from "./penalty-kicks"
+import { PenaltyShootout } from "./penalty-shootout"
 import { SetHistory } from "./set-history"
 
 function configLabel({ modality_configuration: c }: MatchDetail) {
@@ -35,6 +38,7 @@ export function MatchConsoleView({ id }: { id: string }) {
   const [endingPeriod, setEndingPeriod] = useState(false)
   const [selected, setSelected] = useState<{ team: MatchTeam; player: MatchPlayer } | null>(null)
   const live = result.data?.status === "IN_PROGRESS"
+  const shootout = live && Boolean(result.data?.penalty_shootout_active)
   const connection = useMatchLive(id, live)
 
   if (result.isPending) {
@@ -52,7 +56,7 @@ export function MatchConsoleView({ id }: { id: string }) {
   const config = configLabel(match)
   const badges = [stageLabel(match), roundLabel(match)].filter(Boolean)
   const selectFrom = (team: MatchTeam | null) =>
-    live && team ? (player: MatchPlayer) => setSelected({ team, player }) : undefined
+    live && !shootout && team ? (player: MatchPlayer) => setSelected({ team, player }) : undefined
   const statusLabel = STATUS_OPTIONS.find((o) => o.value === match.status)?.label
 
   return (
@@ -72,7 +76,7 @@ export function MatchConsoleView({ id }: { id: string }) {
           </div>
           <div className="flex items-center gap-3">
             <ConnectionBadge status={connection} />
-            {live && <FinishMatch match={match} />}
+            {live && (shootout ? <EndShootout match={match} /> : <FinishMatch match={match} />)}
           </div>
         </div>
         {config && <p className="type-caption text-muted-foreground">{config}</p>}
@@ -83,22 +87,30 @@ export function MatchConsoleView({ id }: { id: string }) {
           <ConsoleRoster team={match.team1} players={match.team1_players} cards={cards} onSelect={selectFrom(match.team1)} />
         </div>
         <div className="space-y-4 lg:order-2">
-          <ConsoleScoreboard match={match} onPlay={() => setStarting(true)} onEndPeriod={() => setEndingPeriod(true)} />
+          {shootout ? (
+            <PenaltyShootout match={match} />
+          ) : (
+            <ConsoleScoreboard match={match} onPlay={() => setStarting(true)} onEndPeriod={() => setEndingPeriod(true)} />
+          )}
           {isVolleyMatch(match) && (
             <Card className="p-5">
               <SetHistory match={match} />
             </Card>
           )}
-          <Card className="p-5">
-            <MatchTimeline match={match} title="Linha do tempo" />
-          </Card>
+          {shootout ? (
+            <PenaltyKicks match={match} />
+          ) : (
+            <Card className="p-5">
+              <MatchTimeline match={match} title="Linha do tempo" />
+            </Card>
+          )}
         </div>
         <div className="lg:order-3">
           <ConsoleRoster team={match.team2} players={match.team2_players} cards={cards} onSelect={selectFrom(match.team2)} />
         </div>
       </div>
 
-      {selected && live && (
+      {selected && live && !shootout && (
         <EventDialog
           key={selected.player.user_id}
           match={match}
@@ -109,7 +121,7 @@ export function MatchConsoleView({ id }: { id: string }) {
         />
       )}
 
-      {endingPeriod && live && <EndPeriodDialog match={match} onClose={() => setEndingPeriod(false)} />}
+      {endingPeriod && live && !shootout && <EndPeriodDialog match={match} onClose={() => setEndingPeriod(false)} />}
 
       {starting && match.status === "SCHEDULED" && <StartMatchDialog match={match} liveMatches={[]} onClose={() => setStarting(false)} />}
     </div>

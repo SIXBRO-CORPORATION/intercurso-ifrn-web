@@ -167,3 +167,51 @@ describe("FinishMatch: vôlei", () => {
     expect(action.mutate).not.toHaveBeenCalled()
   })
 })
+
+describe("FinishMatch: empate em mata-mata", () => {
+  const tied = () => makeMatch({ score: [2, 2], setsWon: null, category: "KNOCKOUT" })
+
+  it("pergunta se deve iniciar a disputa de pênaltis, sem finalizar", async () => {
+    const user = userEvent.setup()
+    render(<FinishMatch match={tied()} />)
+
+    await user.click(header())
+
+    const dialog = screen.getByRole("dialog", { name: "Partida empatada" })
+    expect(within(dialog).getByText("A partida terminou empatada. Iniciar disputa de pênaltis?")).toBeTruthy()
+    expect(action.mutate).not.toHaveBeenCalled()
+  })
+
+  it("inicia a disputa ao confirmar", async () => {
+    const user = userEvent.setup()
+    render(<FinishMatch match={tied()} />)
+
+    await user.click(header())
+    await user.click(screen.getByRole("button", { name: "Iniciar pênaltis" }))
+
+    expect(action.mutate).toHaveBeenCalledWith("penalty-shootout/start", expect.any(Object))
+  })
+
+  it("cancelar mantém a partida em andamento", async () => {
+    const user = userEvent.setup()
+    render(<FinishMatch match={tied()} />)
+
+    await user.click(header())
+    await user.click(screen.getByRole("button", { name: "Cancelar" }))
+
+    expect(screen.queryByRole("dialog")).toBeNull()
+    expect(action.mutate).not.toHaveBeenCalled()
+  })
+})
+
+describe("FinishMatch: empate na fase de grupos", () => {
+  it("finaliza direto, sem popup", async () => {
+    const user = userEvent.setup()
+    render(<FinishMatch match={makeMatch({ score: [1, 1], setsWon: null, category: "GROUP" })} />)
+
+    await user.click(header())
+
+    expect(screen.queryByRole("dialog")).toBeNull()
+    expect(action.mutate).toHaveBeenCalledWith("finish", expect.any(Object))
+  })
+})

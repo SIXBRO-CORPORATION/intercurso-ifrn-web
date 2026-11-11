@@ -6,9 +6,13 @@ type Options = {
   sets?: MatchDetail["sets"]
   status?: MatchDetail["status"]
   winnerId?: string | null
+  category?: string | null
+  penalty?: [number, number] | null
+  shootoutActive?: boolean
+  timeline?: MatchDetail["timeline"]
 }
 
-export function makeMatch({ score = [0, 0], setsWon = [0, 0], sets = [], status = "IN_PROGRESS", winnerId = null }: Options = {}): MatchDetail {
+export function makeMatch({ score = [0, 0], setsWon = [0, 0], sets = [], status = "IN_PROGRESS", winnerId = null, category = null, penalty = null, shootoutActive = false, timeline = [] }: Options = {}): MatchDetail {
   return {
     match_id: "m1",
     bracket_id: null,
@@ -16,20 +20,21 @@ export function makeMatch({ score = [0, 0], setsWon = [0, 0], sets = [], status 
     modality_name: "Vôlei",
     group_name: null,
     match_type: null,
-    match_category: null,
+    match_category: category,
     status,
     scheduled_date: null,
-    team1: { team_id: "t1", name: "Falcões", photo: null, score: score[0], sets_won: setsWon?.[0] },
-    team2: { team_id: "t2", name: "Tigres", photo: null, score: score[1], sets_won: setsWon?.[1] },
+    team1: { team_id: "t1", name: "Falcões", photo: null, score: score[0], sets_won: setsWon?.[0], penalty_score: penalty?.[0] },
+    team2: { team_id: "t2", name: "Tigres", photo: null, score: score[1], sets_won: setsWon?.[1], penalty_score: penalty?.[1] },
     winner_id: winnerId,
     clock_seconds: null,
     clock_running: false,
     current_period: null,
+    penalty_shootout_active: shootoutActive,
     modality_configuration: { sets_to_win: 3 },
     sets,
     team1_players: [],
     team2_players: [],
-    timeline: [],
+    timeline,
   }
 }
 
