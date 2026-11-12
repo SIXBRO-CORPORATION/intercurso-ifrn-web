@@ -7,6 +7,7 @@ import type { MatchDetail, MatchTeam } from "../../types/match"
 import { isVolleyMatch, matchClockLimit, periodLabel } from "../../utils/match-card"
 import { parseMatchActionError } from "../../utils/match-action-error"
 import { matchWinnerTeam } from "../../utils/match-finish"
+import { hasShootout, withPenalties } from "../../utils/match-penalties"
 import { hasNextPeriod, isPeriodEnded } from "../../utils/match-timeline"
 import { LiveClock } from "../live-clock"
 import { SetPrompt } from "./set-prompt"
@@ -21,9 +22,9 @@ export function ConsoleScoreboard({ match, onPlay, onEndPeriod }: Props) {
   const { team1, team2, status } = match
   const volley = isVolleyMatch(match)
   const live = status === "IN_PROGRESS"
-  const shootout = team1?.penalty_score != null && team2?.penalty_score != null
+  const shootout = status === "FINISHED" && hasShootout(match)
   const winner = matchWinnerTeam(match)
-  const value = (t: MatchTeam | null) => (volley && status === "FINISHED" ? t?.sets_won : t?.score) ?? 0
+  const value = (t: MatchTeam | null) => withPenalties((volley && status === "FINISHED" ? t?.sets_won : t?.score) ?? 0, t, shootout)
   const ended = live && !volley && isPeriodEnded(match.timeline)
   const noNextPeriod = !hasNextPeriod(match)
   const locked = !live || ended || action.isPending
@@ -57,11 +58,6 @@ export function ConsoleScoreboard({ match, onPlay, onEndPeriod }: Props) {
       {status === "FINISHED" && (
         <p className="type-label text-center text-white/80">
           {winner ? `Vencedor: ${winner.name}` : "Empate"}
-        </p>
-      )}
-      {shootout && (
-        <p className="type-label text-center text-white/80">
-          Pênaltis {team1?.penalty_score} – {team2?.penalty_score}
         </p>
       )}
       {live && (

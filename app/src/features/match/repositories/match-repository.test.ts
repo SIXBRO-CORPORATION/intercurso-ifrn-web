@@ -2,7 +2,7 @@ import { AxiosError, type InternalAxiosRequestConfig } from "axios"
 import { beforeEach, describe, expect, it } from "vitest"
 import { api } from "@/lib/axios"
 import { parseFilters, toQuery } from "../utils/match-filters"
-import { getMatch, listMatches, registerEvent, runMatchAction, startMatch } from "./match-repository"
+import { getMatch, listMatches, registerEvent, registerPenaltyKick, runMatchAction, startMatch } from "./match-repository"
 
 const match = {
   match_id: "m1",
@@ -118,7 +118,7 @@ describe("registerEvent", () => {
 })
 
 describe("runMatchAction", () => {
-  it.each(["clock/pause", "clock/resume", "period/end", "period/start"] as const)("faz POST em /%s e devolve o estado validado", async (action) => {
+  it.each(["clock/pause", "clock/resume", "period/end", "period/start", "penalty-shootout/start", "penalty-shootout/end"] as const)("faz POST em /%s e devolve o estado validado", async (action) => {
     reply = { data: { ...match, sets: [], team1_players: [], team2_players: [], timeline: [] } }
     const detail = await runMatchAction("m1", action)
     expect(calls[0].method).toBe("post")
@@ -129,5 +129,20 @@ describe("runMatchAction", () => {
   it("repassa o erro do backend", async () => {
     status = 400
     await expect(runMatchAction("m1", "period/end")).rejects.toThrow()
+  })
+})
+
+describe("registerPenaltyKick", () => {
+  it("faz POST em /penalty-shootout/kick com time e resultado", async () => {
+    reply = { data: { ...match, sets: [], team1_players: [], team2_players: [], timeline: [] } }
+    const detail = await registerPenaltyKick("m1", { team_id: "t1", result: "MISS" })
+    expect(calls[0].url).toBe("/api/match/m1/penalty-shootout/kick")
+    expect(JSON.parse(calls[0].data)).toEqual({ team_id: "t1", result: "MISS" })
+    expect(detail.match_id).toBe("m1")
+  })
+
+  it("repassa o erro do backend", async () => {
+    status = 400
+    await expect(registerPenaltyKick("m1", { team_id: "t1", result: "GOAL" })).rejects.toThrow()
   })
 })
