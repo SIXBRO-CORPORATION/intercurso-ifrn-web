@@ -21,7 +21,7 @@ acesso estão em `ROUTING.md`; sessão em `AUTH.md`; tempo real em `REALTIME.md`
 app/
 ├── app/                       # App Router (somente rotas, layouts, metadata, globals.css)
 │   ├── layout.tsx             # raiz: QueryProvider > AuthProvider
-│   ├── (public)/              # sem login obrigatório
+│   ├── (public)/              # sem login obrigatório; layout com PublicHeader (navbar)
 │   ├── (auth)/                # login e callback do SUAP
 │   ├── (dashboard)/           # painel autenticado: layout com AuthGuard + AccessGate
 │   └── api/                   # reservado (Route Handlers); vazio

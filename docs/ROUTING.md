@@ -26,6 +26,8 @@ lugar define caminho ou papel mínimo de uma página.
 | `proxy.ts` (raiz de `app/`) | barra caminhos fora do registro |
 | `src/features/auth/components/access-gate.tsx` | aplica `access` na UI do painel |
 | `src/features/dashboard/constants/sections.ts` | navegação do painel, derivada do registro |
+| `src/features/dashboard/components/public-header.tsx` | navbar do site público (`app/(public)/layout.tsx`); itens montados com `href`, só de rotas registradas |
+| `src/shared/components/site-navbar.tsx` | navbar genérica (marca, itens, ações); marca o item ativo por prefixo do caminho |
 
 `core/routes` não importa nada do projeto (regra de camadas de `ARCHITECTURE.md`).
 
