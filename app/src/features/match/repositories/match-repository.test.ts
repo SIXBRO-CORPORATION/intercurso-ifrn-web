@@ -2,7 +2,7 @@ import { AxiosError, type InternalAxiosRequestConfig } from "axios"
 import { beforeEach, describe, expect, it } from "vitest"
 import { api } from "@/lib/axios"
 import { parseFilters, toQuery } from "../utils/match-filters"
-import { getMatch, listMatches, registerEvent, registerPenaltyKick, runMatchAction, startMatch } from "./match-repository"
+import { deleteEvent, getMatch, listMatches, registerEvent, registerPenaltyKick, runMatchAction, startMatch, undoLastEvent } from "./match-repository"
 
 const match = {
   match_id: "m1",
@@ -144,5 +144,32 @@ describe("registerPenaltyKick", () => {
   it("repassa o erro do backend", async () => {
     status = 400
     await expect(registerPenaltyKick("m1", { team_id: "t1", result: "GOAL" })).rejects.toThrow()
+  })
+})
+
+describe("correção de eventos", () => {
+  const detail = { ...match, sets: [], team1_players: [], team2_players: [], timeline: [] }
+  const alert = { previous_score: "2x1", corrected_score: "1x1", current_status: "EMPATE", required_actions: ["Verificar chaveamento"], note: "n" }
+
+  it("desfaz o último evento por POST em /event/undo e valida jogador reativado e alerta", async () => {
+    reply = { data: { ...detail, reactivated_player_id: "p1", correction_alert: alert } }
+    const result = await undoLastEvent("m1")
+    expect(calls[0].method).toBe("post")
+    expect(calls[0].url).toBe("/api/match/m1/event/undo")
+    expect(result.reactivated_player_id).toBe("p1")
+    expect(result.correction_alert?.current_status).toBe("EMPATE")
+  })
+
+  it("exclui um evento por DELETE em /event/{id}", async () => {
+    reply = { data: detail }
+    const result = await deleteEvent("m1", "e1")
+    expect(calls[0].method).toBe("delete")
+    expect(calls[0].url).toBe("/api/match/m1/event/e1")
+    expect(result.correction_alert).toBeUndefined()
+  })
+
+  it("repassa o erro do backend", async () => {
+    status = 400
+    await expect(deleteEvent("m1", "e1")).rejects.toThrow()
   })
 })

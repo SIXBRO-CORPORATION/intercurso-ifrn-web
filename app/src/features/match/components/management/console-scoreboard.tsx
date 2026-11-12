@@ -8,16 +8,16 @@ import { isVolleyMatch, matchClockLimit, periodLabel } from "../../utils/match-c
 import { parseMatchActionError } from "../../utils/match-action-error"
 import { matchWinnerTeam } from "../../utils/match-finish"
 import { hasShootout, withPenalties } from "../../utils/match-penalties"
-import { hasNextPeriod, isPeriodEnded } from "../../utils/match-timeline"
+import { hasNextPeriod, isPeriodEnded, lastCorrectableEvent } from "../../utils/match-timeline"
 import { LiveClock } from "../live-clock"
 import { SetPrompt } from "./set-prompt"
 
 const ACTION =
   "type-label h-11 rounded-full bg-white/20 font-bold text-white/70 transition-colors enabled:text-white enabled:hover:bg-white/30 disabled:cursor-default"
 
-type Props = { match: MatchDetail; onPlay: () => void; onEndPeriod: () => void }
+type Props = { match: MatchDetail; onPlay: () => void; onEndPeriod: () => void; onUndo?: () => void }
 
-export function ConsoleScoreboard({ match, onPlay, onEndPeriod }: Props) {
+export function ConsoleScoreboard({ match, onPlay, onEndPeriod, onUndo }: Props) {
   const action = useMatchAction(match.match_id)
   const { team1, team2, status } = match
   const volley = isVolleyMatch(match)
@@ -101,7 +101,14 @@ export function ConsoleScoreboard({ match, onPlay, onEndPeriod }: Props) {
               Fim do período
             </button>
           )}
-          <button type="button" disabled className={ACTION}>Desfazer</button>
+          <button
+            type="button"
+            disabled={!onUndo || !live || action.isPending || !lastCorrectableEvent(match.timeline)}
+            className={ACTION}
+            onClick={onUndo}
+          >
+            Desfazer
+          </button>
         </div>
       )}
       {action.isError && (

@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 import { makeMatch } from "@/tests/match-fixtures"
 import { ConsoleScoreboard } from "./console-scoreboard"
@@ -56,5 +57,25 @@ describe("ConsoleScoreboard: partida em andamento", () => {
     render(<ConsoleScoreboard match={makeMatch({ score: [2, 1], setsWon: null })} onPlay={noop} onEndPeriod={noop} />)
 
     expect(screen.queryByText(/Vencedor/)).toBeNull()
+  })
+})
+
+describe("ConsoleScoreboard: desfazer", () => {
+  const event = { event_id: "e1", event_type: "GOAL", clock_seconds: 5 }
+  const undo = (match: ReturnType<typeof makeMatch>, onUndo = vi.fn()) => {
+    render(<ConsoleScoreboard match={match} onPlay={noop} onEndPeriod={noop} onUndo={onUndo} />)
+    return { onUndo, button: screen.getByRole("button", { name: "Desfazer" }) as HTMLButtonElement }
+  }
+
+  it("fica desabilitado sem evento corrigível", () => {
+    const { button } = undo(makeMatch({ timeline: [{ event_id: "s", event_type: "MATCH_STARTED", clock_seconds: 0 }] }))
+    expect(button.disabled).toBe(true)
+  })
+
+  it("abre a correção quando há evento para desfazer", async () => {
+    const { button, onUndo } = undo(makeMatch({ timeline: [event] }))
+    expect(button.disabled).toBe(false)
+    await userEvent.click(button)
+    expect(onUndo).toHaveBeenCalledOnce()
   })
 })

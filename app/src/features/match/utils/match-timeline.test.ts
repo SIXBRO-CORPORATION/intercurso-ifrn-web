@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { matchDetailSchema } from "../schemas/match-schema"
-import { hasNextPeriod, isPeriodEnded, playerCards, timelineRows } from "./match-timeline"
+import { hasNextPeriod, isPeriodEnded, lastCorrectableEvent, playerCards, rowSummary, timelineRows } from "./match-timeline"
 
 const base = {
   match_id: "m1", bracket_id: null, modality_id: "mod", modality_name: "Futsal", group_name: null,
@@ -52,18 +52,18 @@ describe("timelineRows", () => {
 })
 
 describe("playerCards", () => {
-  it("conta amarelos e marca vermelho ou expulsão por jogador", () => {
+  it("conta amarelos e marca expulso só com o evento EXPULSION", () => {
     const cards = playerCards([
       { event_id: "1", event_type: "CARD_YELLOW", clock_seconds: 1, player_id: "a" },
       { event_id: "2", event_type: "CARD_YELLOW", clock_seconds: 2, player_id: "a" },
       { event_id: "3", event_type: "EXPULSION", clock_seconds: 2, player_id: "a" },
-      { event_id: "4", event_type: "CARD_RED", clock_seconds: 3, player_id: "b" },
+      { event_id: "4", event_type: "CARD_RED", clock_seconds: 3, player_id: "b" }, // vermelho sem EXPULSION (desfeita): jogador ativo
       { event_id: "5", event_type: "GOAL", clock_seconds: 4, player_id: "c" },
       { event_id: "6", event_type: "PERIOD_END", clock_seconds: 5, player_id: null },
     ])
-    expect(cards.get("a")).toEqual({ yellow: 2, red: true })
-    expect(cards.get("b")).toEqual({ yellow: 0, red: true })
-    expect(cards.get("c")).toEqual({ yellow: 0, red: false })
+    expect(cards.get("a")).toEqual({ yellow: 2, expelled: true })
+    expect(cards.get("b")).toEqual({ yellow: 0, expelled: false })
+    expect(cards.get("c")).toEqual({ yellow: 0, expelled: false })
     expect(cards.size).toBe(3)
   })
 })
@@ -97,5 +97,44 @@ describe("hasNextPeriod", () => {
   it("não bloqueia sem configuração de períodos", () => {
     expect(hasNextPeriod({ timeline, modality_configuration: null })).toBe(true)
     expect(hasNextPeriod({ timeline, modality_configuration: { num_periods: null } })).toBe(true)
+  })
+})
+
+describe("lastCorrectableEvent", () => {
+  const event = (event_id: string, event_type: string, created_at?: string) => ({ event_id, event_type, clock_seconds: 0, created_at })
+
+  it("ignora início/fim de partida e de período", () => {
+    const timeline = [event("a", "GOAL"), event("b", "PERIOD_END"), event("c", "MATCH_END")]
+    expect(lastCorrectableEvent(timeline)?.event_id).toBe("a")
+  })
+
+  it("escolhe o created_at mais recente, não a posição na lista", () => {
+    const timeline = [event("novo", "GOAL", "2026-11-12T20:00:00Z"), event("velho", "CARD_YELLOW", "2026-11-12T19:00:00Z")]
+    expect(lastCorrectableEvent(timeline)?.event_id).toBe("novo")
+  })
+
+  it("sem created_at vale o último da lista; sem evento corrigível não há alvo", () => {
+    expect(lastCorrectableEvent([event("a", "GOAL"), event("b", "GOAL")])?.event_id).toBe("b")
+    expect(lastCorrectableEvent([event("a", "MATCH_STARTED")])).toBeUndefined()
+  })
+})
+
+describe("timelineRows: correctable", () => {
+  it("marca como não corrigíveis os eventos de início e fim", () => {
+    const match = matchDetailSchema.parse({
+      ...base,
+      timeline: [
+        { event_id: "e1", event_type: "MATCH_STARTED", clock_seconds: 0 },
+        { event_id: "e2", event_type: "GOAL", clock_seconds: 5 },
+      ],
+    })
+    expect(timelineRows(match).map((r) => r.correctable)).toEqual([false, true])
+  })
+})
+
+describe("rowSummary", () => {
+  it("junta tipo, jogador e tempo", () => {
+    expect(rowSummary({ label: "Gol", player: "Lucas", clock: "02:05" })).toBe("Gol · Lucas · 02:05")
+    expect(rowSummary({ label: "Fim do set 1", player: null, clock: null })).toBe("Fim do set 1")
   })
 })

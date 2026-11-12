@@ -16,6 +16,7 @@ import { StartMatchDialog } from "../start-match-dialog"
 import { ConnectionBadge } from "./connection-badge"
 import { ConsoleRoster } from "./console-roster"
 import { ConsoleScoreboard } from "./console-scoreboard"
+import { CorrectEventDialog } from "./correct-event-dialog"
 import { EndPeriodDialog } from "./end-period-dialog"
 import { EndShootout } from "./end-shootout"
 import { EventDialog } from "./event-dialog"
@@ -36,6 +37,7 @@ export function MatchConsoleView({ id }: { id: string }) {
   const result = useMatch(id)
   const [starting, setStarting] = useState(false)
   const [endingPeriod, setEndingPeriod] = useState(false)
+  const [correcting, setCorrecting] = useState<{ eventId: string | null } | null>(null)
   const [selected, setSelected] = useState<{ team: MatchTeam; player: MatchPlayer } | null>(null)
   const live = result.data?.status === "IN_PROGRESS"
   const shootout = live && Boolean(result.data?.penalty_shootout_active)
@@ -90,7 +92,12 @@ export function MatchConsoleView({ id }: { id: string }) {
           {shootout ? (
             <PenaltyShootout match={match} />
           ) : (
-            <ConsoleScoreboard match={match} onPlay={() => setStarting(true)} onEndPeriod={() => setEndingPeriod(true)} />
+            <ConsoleScoreboard
+              match={match}
+              onPlay={() => setStarting(true)}
+              onEndPeriod={() => setEndingPeriod(true)}
+              onUndo={() => setCorrecting({ eventId: null })}
+            />
           )}
           {isVolleyMatch(match) && (
             <Card className="p-5">
@@ -101,7 +108,11 @@ export function MatchConsoleView({ id }: { id: string }) {
             <PenaltyKicks match={match} />
           ) : (
             <Card className="p-5">
-              <MatchTimeline match={match} title="Linha do tempo" />
+              <MatchTimeline
+                match={match}
+                title="Linha do tempo"
+                onSelect={live || match.status === "FINISHED" ? (eventId) => setCorrecting({ eventId }) : undefined}
+              />
             </Card>
           )}
         </div>
@@ -120,6 +131,8 @@ export function MatchConsoleView({ id }: { id: string }) {
           onClose={() => setSelected(null)}
         />
       )}
+
+      {correcting && !shootout && <CorrectEventDialog match={match} eventId={correcting.eventId} onClose={() => setCorrecting(null)} />}
 
       {endingPeriod && live && !shootout && <EndPeriodDialog match={match} onClose={() => setEndingPeriod(false)} />}
 
