@@ -1,6 +1,10 @@
 import type { TeamStatus } from "../schemas/team-schema"
 
-export const NEW_TEAM_PATH = "/equipes/nova"
+export const TEAM_NAME_MIN = 3
+export const TEAM_NAME_MAX = 60
+export const TEAM_PHOTO_MAX_BYTES = 5 * 1024 * 1024
+export const TEAM_PHOTO_TYPES: readonly string[] = ["image/png", "image/jpeg", "image/webp"]
+export const TEAM_INVITE_PATH = "/convite"
 
 export const TEAM_STATUS_LABELS: Record<TeamStatus, string> = {
     DRAFT: "Rascunho",

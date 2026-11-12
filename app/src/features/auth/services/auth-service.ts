@@ -19,6 +19,7 @@ type MeData = {
   matricula: string
   role: string
   atleta: boolean
+  gender?: "M" | "F" | null
 }
 
 function toSessionUser(me: MeData): SessionUser {
@@ -29,6 +30,7 @@ function toSessionUser(me: MeData): SessionUser {
     matricula: me.matricula,
     role: me.role,
     atleta: me.atleta,
+    gender: me.gender === "M" ? "MALE" : me.gender === "F" ? "FEMALE" : null,
   }
 }
 

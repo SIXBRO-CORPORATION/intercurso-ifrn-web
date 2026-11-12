@@ -1,7 +1,7 @@
 import { AxiosError, type InternalAxiosRequestConfig } from "axios"
 import { beforeEach, describe, expect, it } from "vitest"
 import { api } from "@/lib/axios"
-import { listTeams } from "./team-repository"
+import { createTeam, listTeams } from "./team-repository"
 
 const team = { team_id: "t1", name: "Info", modality_id: "m1", status: "APPROVED", photo: null, members_count: 7, max_members: 10 }
 
@@ -51,5 +51,34 @@ describe("listTeams", () => {
     it("repassa erros de rede/HTTP", async () => {
         status = 403
         await expect(listTeams({}, signal)).rejects.toThrow()
+    })
+})
+
+
+describe("createTeam", () => {
+    const created = { team_id: "t1", name: "Falcões", modality_id: "m1", status: "DRAFT", invite_token: "abc", owner_id: "u1" }
+
+    it("envia multipart com nome, modalidade e foto opcional", async () => {
+        reply = { data: created }
+        const photo = new File(["x"], "logo.png", { type: "image/png" })
+        const result = await createTeam({ name: "Falcões", modalityId: "m1", photo })
+        const body = calls[0].data as FormData
+        expect(calls[0].method).toBe("post")
+        expect(calls[0].url).toBe("/api/team/")
+        expect(body.get("name")).toBe("Falcões")
+        expect(body.get("modality_id")).toBe("m1")
+        expect(body.get("photo")).toBeInstanceOf(File)
+        expect(result.invite_token).toBe("abc")
+    })
+
+    it("omite a foto quando não informada", async () => {
+        reply = { data: created }
+        await createTeam({ name: "Falcões", modalityId: "m1" })
+        expect((calls[0].data as FormData).has("photo")).toBe(false)
+    })
+
+    it("rejeita resposta fora do contrato", async () => {
+        reply = { data: { name: "sem id" } }
+        await expect(createTeam({ name: "Falcões", modalityId: "m1" })).rejects.toThrow()
     })
 })
