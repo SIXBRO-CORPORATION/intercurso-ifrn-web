@@ -29,6 +29,16 @@ export async function registerPenaltyKick(id: string, kick: PenaltyKickAction) {
   return matchDetailResponseSchema.parse(data).data
 }
 
+export async function undoLastEvent(id: string) {
+  const { data } = await api.post(`${MATCH_API}${encodeURIComponent(id)}/event/undo`)
+  return matchDetailResponseSchema.parse(data).data
+}
+
+export async function deleteEvent(id: string, eventId: string) {
+  const { data } = await api.delete(`${MATCH_API}${encodeURIComponent(id)}/event/${encodeURIComponent(eventId)}`)
+  return matchDetailResponseSchema.parse(data).data
+}
+
 export async function runMatchAction(id: string, action: MatchAction) {
   const { data } = await api.post(`${MATCH_API}${encodeURIComponent(id)}/${action}`)
   return matchDetailResponseSchema.parse(data).data
