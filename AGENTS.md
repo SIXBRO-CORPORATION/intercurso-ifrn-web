@@ -101,7 +101,7 @@ app/
   `constants`, `infrastructure/http`, `shared/hooks`, `shared/models`, `shared/types`, `styles`,
   `app/api`.
 - Os domínios `users` e `bracket` ainda não existem no frontend. Do protótipo, ainda não há telas de
-  temporada, cadastro de modalidade, chaveamento, detalhe/análise de equipe e convite; os itens de menu
+  cadastro de modalidade, chaveamento, detalhe/análise de equipe e convite; os itens de menu
   correspondentes entram em `features/shell/constants/nav.ts` junto com as rotas.
 - A criação de equipe é um diálogo em `/equipes` (`create-team-dialog.tsx`), sem rota própria. O link
   de convite gerado (`TEAM_INVITE_PATH`, `/convite/:token`) aponta para uma tela ainda não registrada e

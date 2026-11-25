@@ -12,6 +12,8 @@ export const ROUTES = {
   profile: { path: "/perfil", access: { minRole: "USER" } },
   manageMatches: { path: "/partidas/gerenciar", access: { minRole: "MONITOR" } },
   manageMatch: { path: "/partidas/gerenciar/:id", access: { minRole: "MONITOR" } },
+  seasons: { path: "/temporadas", access: { minRole: "MONITOR" } },
+  season: { path: "/temporadas/:id", access: { minRole: "MONITOR" } },
 } as const satisfies Record<string, RouteEntry>
 
 export type RouteKey = keyof typeof ROUTES

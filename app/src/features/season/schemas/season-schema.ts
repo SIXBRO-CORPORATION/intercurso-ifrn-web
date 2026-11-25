@@ -20,5 +20,13 @@ export const seasonSchema = z.object({
 })
 
 export const activeSeasonSchema = envelopeSchema(seasonSchema.nullable())
+export const seasonListSchema = envelopeSchema(z.array(seasonSchema).nullable())
+
+export const seasonDetailSchema = seasonSchema.extend({
+  modality_ids: z.array(z.string()),
+  rules_document: z.string().nullish(),
+})
+export const seasonDetailResponseSchema = envelopeSchema(seasonDetailSchema)
 
 export type Season = z.infer<typeof seasonSchema>
+export type SeasonDetail = z.infer<typeof seasonDetailSchema>
