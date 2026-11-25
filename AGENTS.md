@@ -74,7 +74,7 @@ nos arquivos staged e `typecheck`.
 | Bibliotecas adotadas, variáveis de ambiente | `docs/stack.md` |
 | Subir o ambiente, Docker, branches | `README.md` |
 
-Imagens de referência de tela: `docs/visual-guidelines/` (consultar só a tela em implementação).
+Design de referência das telas: <https://claude.ai/artifact/BGjB6wgKdurEECsmVbVmPw#web> (consultar só a tela em implementação).
 
 ## Mapa do código
 
