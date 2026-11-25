@@ -30,7 +30,7 @@ export function CreateTeamModalityStep({ seasonId, selectedId, takenModalityIds,
             <div role="status" aria-busy="true" className="grid gap-3 sm:grid-cols-2">
                 <span className="sr-only">Carregando modalidades…</span>
                 {Array.from({ length: 4 }, (_, index) => (
-                    <Skeleton key={index} className="h-24 rounded-xl" aria-hidden />
+                    <Skeleton key={index} className="h-20 rounded-lg" aria-hidden />
                 ))}
             </div>
         )
@@ -62,20 +62,20 @@ export function CreateTeamModalityStep({ seasonId, selectedId, takenModalityIds,
                         disabled={reason !== null}
                         onClick={() => onSelect(modality)}
                         className={cn(
-                            "relative flex min-h-24 items-start gap-3 rounded-xl border-2 p-4 text-left outline-none transition focus-visible:ring-3 focus-visible:ring-ring/40",
-                            selected ? "border-primary bg-primary-soft" : "border-border bg-card hover:border-primary-muted",
-                            reason && "cursor-not-allowed opacity-60 hover:border-border",
+                            "relative flex min-h-20 items-start gap-3 rounded-lg border-2 p-3 text-left outline-none transition focus-visible:ring-3 focus-visible:ring-ring",
+                            selected ? "border-primary bg-selected" : "border-border bg-card hover:border-border-strong",
+                            reason && "cursor-not-allowed opacity-50 hover:border-border",
                         )}
                     >
                         <Avatar name={modality.name} src={resolvePhotoSrc(modality.photo)} />
                         <span className="min-w-0 flex-1">
-                            <span className="type-section block truncate text-ink">{modality.name}</span>
-                            <span className="type-body-sm block text-muted-foreground">
+                            <span className="type-h3 block truncate">{modality.name}</span>
+                            <span className="type-small block text-text-secondary">
                                 {getGenderModeLabel(modality.gender_mode)} · {getTeamSizeLabel(modality)}
                             </span>
-                            {reason && <span className="type-body-sm mt-1 block text-danger">{reason}</span>}
+                            {reason && <span className="type-small mt-1 block text-danger-text">{reason}</span>}
                         </span>
-                        {selected && <Check className="size-5 shrink-0 text-primary" aria-hidden />}
+                        {selected && <Check className="size-5 shrink-0 text-primary-text" aria-hidden />}
                     </button>
                 )
             })}

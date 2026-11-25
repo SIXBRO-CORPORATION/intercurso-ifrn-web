@@ -1,29 +1,21 @@
 import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 import { Slot } from "radix-ui"
 
-const cardVariants = cva("", {
-  variants: {
-    variant: {
-      surface: "rounded-lg border border-border bg-card shadow-card",
-      field: "rounded-md bg-field",
-    },
-  },
-  defaultVariants: {
-    variant: "surface",
-  },
-})
-
-function Card({
-  className,
-  variant,
-  asChild = false,
-  ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof cardVariants> & { asChild?: boolean }) {
+function Card({ className, asChild = false, ...props }: React.ComponentProps<"div"> & { asChild?: boolean }) {
   const Comp = asChild ? Slot.Root : "div"
 
-  return <Comp data-slot="card" className={cn(cardVariants({ variant }), className)} {...props} />
+  return <Comp data-slot="card" className={cn("overflow-hidden rounded-lg bg-card", className)} {...props} />
 }
 
-export { Card, cardVariants }
+/** Cabeçalho padrão de cartão: título à esquerda, ação opcional à direita. */
+function CardHeader({ title, action, className }: { title: React.ReactNode; action?: React.ReactNode; className?: string }) {
+  return (
+    <div data-slot="card-header" className={cn("flex min-h-11 items-center justify-between gap-3 border-b border-border px-4", className)}>
+      <h2 className="type-h3 min-w-0 truncate">{title}</h2>
+      {action}
+    </div>
+  )
+}
+
+export { Card, CardHeader }

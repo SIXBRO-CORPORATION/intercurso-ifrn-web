@@ -2,10 +2,11 @@
 
 import { useModalities } from "@/features/modality"
 import { useActiveSeason } from "@/features/season"
-import { PageHeader } from "@/shared/components/page-header"
-import { EmptyState, ErrorState, GridSkeleton } from "@/shared/components/request-states"
+import { EmptyState, ErrorState, ListSkeleton } from "@/shared/components/request-states"
+import { Card, CardHeader } from "@/shared/components/ui/card"
 import { useTeams } from "../hooks/use-teams"
-import { TeamCard } from "./team-card"
+import { getTeamCountLabel } from "../utils/team-card"
+import { TeamRow } from "./team-row"
 
 const LOADING_LABEL = "Carregando times…"
 
@@ -14,36 +15,35 @@ function ModalityTeams({ modalityId, seasonId }: { modalityId: string; seasonId?
     const modalities = useModalities(seasonId)
     const name = modalities.data?.find((modality) => modality.modality_id === modalityId)?.name
 
+    if (teams.isPending) return <ListSkeleton label={LOADING_LABEL} />
+    if (teams.isError) {
+        return (
+            <ErrorState
+                title="Não foi possível carregar os times."
+                description="Verifique sua conexão e tente novamente."
+                onRetry={() => teams.refetch()}
+            />
+        )
+    }
+    if (teams.data.length === 0) {
+        return <EmptyState title="Nenhum time aprovado ainda." description="Os times aparecem aqui assim que forem aprovados pelo monitor." />
+    }
+
     return (
-        <div className="space-y-6">
-            <PageHeader title={name ? `Times de ${name}` : "Times"} description="Equipes aprovadas nesta modalidade." />
-            {teams.isPending && <GridSkeleton label={LOADING_LABEL} />}
-            {teams.isError && (
-                <ErrorState
-                    title="Não foi possível carregar os times."
-                    description="Verifique sua conexão e tente novamente."
-                    onRetry={() => teams.refetch()}
-                />
-            )}
-            {teams.isSuccess && teams.data.length === 0 && (
-                <EmptyState title="Nenhum time aprovado ainda." description="Os times aparecem aqui assim que forem aprovados pelo monitor." />
-            )}
-            {teams.isSuccess && teams.data.length > 0 && (
-                <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {teams.data.map((team) => (
-                        <li key={team.team_id}>
-                            <TeamCard team={team} />
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </div>
+        <Card>
+            <CardHeader title={name ? `Times de ${name}` : "Times aprovados"} />
+            <ul className="divide-y divide-border">
+                {teams.data.map((team) => (
+                    <TeamRow key={team.team_id} team={team} detail={getTeamCountLabel(team.members_count, team.max_members)} />
+                ))}
+            </ul>
+        </Card>
     )
 }
 
 export function TeamListView({ modalityId }: { modalityId: string }) {
     const season = useActiveSeason()
-    if (season.isPending) return <GridSkeleton label={LOADING_LABEL} />
+    if (season.isPending) return <ListSkeleton label={LOADING_LABEL} />
 
     const seasonId = season.data?.season_id
     return <ModalityTeams modalityId={modalityId} seasonId={seasonId} />

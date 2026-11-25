@@ -1,13 +1,13 @@
 "use client"
 
 import { useActiveSeason } from "@/features/season"
+import { EmptyState, ErrorState, ListSkeleton } from "@/shared/components/request-states"
 import { MatchList } from "./match-list"
-import { MatchListLoading, MatchListMessage } from "./match-list-states"
 
 export function MatchListView() {
   const season = useActiveSeason()
-  if (season.isPending) return <MatchListLoading />
-  if (season.isError) return <MatchListMessage alert title="Não foi possível carregar a temporada." />
-  if (!season.data) return <MatchListMessage title="Nenhuma temporada ativa.">Volte quando o Intercurso começar.</MatchListMessage>
-  return <MatchList seasonId={season.data.season_id} />
+  if (season.isPending) return <ListSkeleton label="Carregando partidas…" />
+  if (season.isError) return <ErrorState title="Não foi possível carregar a temporada." onRetry={() => season.refetch()} />
+  if (!season.data) return <EmptyState title="Nenhuma temporada ativa." description="Volte quando o Intercurso começar." />
+  return <MatchList season={season.data} />
 }

@@ -1,7 +1,5 @@
 import type { RouteEntry } from "./types"
 
-const PANEL = "/dashboard"
-
 export const ROUTES = {
   home: { path: "/", access: "public" },
   login: { path: "/login", access: "public" },
@@ -11,8 +9,7 @@ export const ROUTES = {
   modalities: { path: "/modalidades", access: "public" },
   modalityTeams: { path: "/modalidades/:id/times", access: { minRole: "USER" } },
   myTeams: { path: "/equipes", access: { minRole: "USER" } },
-  dashboard: { path: PANEL, access: { minRole: "USER" } },
-  dashboardSection: { path: `${PANEL}/:section`, access: { minRole: "USER" } },
+  profile: { path: "/perfil", access: { minRole: "USER" } },
   manageMatches: { path: "/partidas/gerenciar", access: { minRole: "MONITOR" } },
   manageMatch: { path: "/partidas/gerenciar/:id", access: { minRole: "MONITOR" } },
 } as const satisfies Record<string, RouteEntry>

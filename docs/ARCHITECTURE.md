@@ -9,7 +9,7 @@ acesso estão em `ROUTING.md`; sessão em `AUTH.md`; tempo real em `REALTIME.md`
 - Três camadas principais: `app/` (rotas finas) → `src/features/` (domínio) → `src/infrastructure/`
   (detalhes técnicos). `src/core/` guarda contratos globais; `src/shared/` guarda código sem domínio.
 - Uma feature é uma fatia vertical de domínio (`match`, `modality`, `season`, `team`, `auth`,
-  `dashboard`). Contém UI, hooks, repositório, schemas e utilidades do próprio domínio.
+  `shell`). Contém UI, hooks, repositório, schemas e utilidades do próprio domínio.
 - Dados externos seguem sempre: **componente → hook (TanStack Query) → repository (axios + Zod) →
   backend**.
 - Páginas e layouts não têm regra de negócio.
@@ -21,7 +21,7 @@ acesso estão em `ROUTING.md`; sessão em `AUTH.md`; tempo real em `REALTIME.md`
 app/
 ├── app/                       # App Router (somente rotas, layouts, metadata, globals.css)
 │   ├── layout.tsx             # raiz: QueryProvider > AuthProvider
-│   ├── (public)/              # sem login obrigatório; layout com PublicHeader (navbar)
+│   ├── (public)/              # sem login obrigatório; layout com AppShell
 │   ├── (auth)/                # login e callback do SUAP
 │   ├── (dashboard)/           # painel autenticado: layout com AuthGuard + AccessGate
 │   └── api/                   # reservado (Route Handlers); vazio
@@ -33,7 +33,7 @@ app/
     │   ├── realtime/          # tipos do cliente SSE
     │   └── config/endpoints/  # constantes dos endpoints (/api/...)
     ├── features/              # fatias de domínio
-    │   ├── auth/  dashboard/  match/  modality/  season/  team/
+    │   ├── auth/  match/  modality/  season/  shell/  team/
     ├── infrastructure/        # integrações técnicas
     │   ├── realtime/          # cliente SSE (ticket, reconexão, validação)
     │   └── storage/           # sessionStorage (caminho de retorno)
@@ -102,7 +102,7 @@ src/features/<dominio>/
 
 Estado real: `match` (components, constants, hooks, repositories, schemas, types, utils),
 `modality`/`team`/`season` (subconjuntos), `auth` (components, constants, contexts, hooks,
-services), `dashboard` (components, constants).
+services), `shell` (components, constants).
 
 ### Responsabilidade de cada pasta
 
@@ -173,7 +173,7 @@ export function useModalities(seasonId?: string) {
 ### Estados de UI
 
 Tela que consome dados trata **carregamento, erro, vazio e sucesso** com os componentes de
-`@/shared/components/request-states`: `GridSkeleton`, `ErrorState` (com `onRetry`), `EmptyState`.
+`@/shared/components/request-states`: `ListSkeleton`, `ErrorState` (com `onRetry`), `EmptyState`.
 Cada `*-view.tsx` decide qual exibir a partir de `isPending`/`isError`/dados vazios.
 
 ### Páginas finas
@@ -222,8 +222,7 @@ Divisão de responsabilidades (detalhes e contrato em `REALTIME.md`):
 9. Se outra feature precisar de algo, expor no `index.ts`.
 10. Validar com `lint`, `typecheck`, `test` e `build`.
 
-Domínios ainda inexistentes no front: `users`, `bracket`. Itens de
-`features/dashboard/constants/sections.ts` sem `href` representam telas futuras.
+Domínios ainda inexistentes no front: `users`, `bracket`.
 
 ## Correspondência com o backend
 

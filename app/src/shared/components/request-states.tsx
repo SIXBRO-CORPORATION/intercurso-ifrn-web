@@ -1,16 +1,16 @@
 import { Button } from "@/shared/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/shared/components/ui/empty"
+import { Empty, EmptyDescription, EmptyTitle } from "@/shared/components/ui/empty"
 import { Skeleton } from "@/shared/components/ui/skeleton"
 
-export function GridSkeleton({ label, count = 4 }: { label: string; count?: number }) {
+export function ListSkeleton({ label, count = 4 }: { label: string; count?: number }) {
     return (
         <div role="status" aria-busy="true">
             <span className="sr-only">{label}</span>
-            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-hidden>
+            <ul className="space-y-2" aria-hidden>
                 {Array.from({ length: count }, (_, index) => (
                     <li key={index}>
-                        <Skeleton className="h-52 rounded-xl" />
+                        <Skeleton className="h-16 rounded-lg" />
                     </li>
                 ))}
             </ul>
@@ -30,7 +30,7 @@ export function ErrorState({ title, description, onRetry }: ErrorStateProps) {
             {onRetry && (
                 <Button
                     type="button"
-                    variant="danger-soft"
+                    variant="secondary"
                     size="sm"
                     onClick={onRetry}
                     className="col-start-2 mt-2 justify-self-center"
@@ -45,10 +45,8 @@ export function ErrorState({ title, description, onRetry }: ErrorStateProps) {
 export function EmptyState({ title, description }: { title: string; description?: string }) {
     return (
         <Empty role="status">
-            <EmptyHeader>
-                <EmptyTitle>{title}</EmptyTitle>
-                {description && <EmptyDescription>{description}</EmptyDescription>}
-            </EmptyHeader>
+            <EmptyTitle>{title}</EmptyTitle>
+            {description && <EmptyDescription>{description}</EmptyDescription>}
         </Empty>
     )
 }

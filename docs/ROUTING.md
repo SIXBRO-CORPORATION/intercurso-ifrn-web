@@ -25,9 +25,8 @@ lugar define caminho ou papel mínimo de uma página.
 | `src/core/routes/match-route.ts` | `findRoute(pathname)`, `hasRole`, `canAccess` |
 | `proxy.ts` (raiz de `app/`) | barra caminhos fora do registro |
 | `src/features/auth/components/access-gate.tsx` | aplica `access` na UI do painel |
-| `src/features/dashboard/constants/sections.ts` | navegação do painel, derivada do registro |
-| `src/features/dashboard/components/public-header.tsx` | navbar do site público (`app/(public)/layout.tsx`); itens montados com `href`, só de rotas registradas |
-| `src/shared/components/site-navbar.tsx` | navbar genérica (marca, itens, ações); marca o item ativo por prefixo do caminho |
+| `src/features/shell/constants/nav.ts` | itens de navegação (`NAV`) e título/voltar de cada tela (`PAGES`) |
+| `src/features/shell/components/app-shell.tsx` | moldura de todas as telas: cabeçalho, menu lateral do monitor e barra inferior no mobile |
 
 `core/routes` não importa nada do projeto (regra de camadas de `ARCHITECTURE.md`).
 
@@ -58,7 +57,7 @@ desconhecido vindo do backend é tratado como `USER`. `"public"` não exige sess
 
 | Chave | Caminho | Acesso | Grupo em `app/` |
 | --- | --- | --- | --- |
-| `home` | `/` | público | `app/page.tsx` (ainda placeholder do create-next-app) |
+| `home` | `/` | público | `app/page.tsx` (redireciona para `matches`) |
 | `login` | `/login` | público | `(auth)` |
 | `authCallback` | `/auth/callback` | público | `(auth)` |
 | `matches` | `/partidas` | público | `(public)` |
@@ -66,8 +65,7 @@ desconhecido vindo do backend é tratado como `USER`. `"public"` não exige sess
 | `modalities` | `/modalidades` | público | `(public)` |
 | `modalityTeams` | `/modalidades/:id/times` | USER | `(public)` + `AuthGuard` na página |
 | `myTeams` | `/equipes` | USER | `(dashboard)` |
-| `dashboard` | `/dashboard` | USER | `(dashboard)` |
-| `dashboardSection` | `/dashboard/:section` | USER | `(dashboard)` |
+| `profile` | `/perfil` | USER | `(dashboard)` |
 | `manageMatches` | `/partidas/gerenciar` | MONITOR | `(dashboard)` |
 | `manageMatch` | `/partidas/gerenciar/:id` | MONITOR | `(dashboard)` |
 
@@ -94,15 +92,15 @@ router.replace(href("login"))
 
 ### Exceção controlada
 
-`features/dashboard/constants/sections.ts` lê `ROUTES[key].path` e `access` diretamente, só para
-rotas estáticas, porque precisa do papel mínimo além do caminho. Código de tela não replica esse padrão.
+`features/shell` lê `ROUTES[key].path` e `access` diretamente, porque a navegação usa o `access` do
+registro para decidir o que cada papel vê. Código de tela não replica esse padrão.
 
 ### Dívidas conhecidas (não copiar)
 
-- `NEW_TEAM_PATH` (`features/team/constants`) e o link em `my-team-card.tsx` usam literais de caminho
-  e apontam para telas não registradas (`/equipes/nova`, `/equipes/:id`): resultam em 404 até a rota
-  existir. Ao criar essas telas, registrar as rotas e trocar os literais por `href`.
-- `app/page.tsx` é o placeholder do Next.js. `app/(public)/home/.gitkeep` está reservado e vazio.
+- `TEAM_INVITE_PATH` (`features/team/constants`) é um literal que aponta para uma tela não registrada
+  (`/convite/:token`): o link de convite resulta em 404 até a rota existir. Ao criar a tela, registrar
+  a rota e trocar o literal por `href`.
+- `app/(public)/home/.gitkeep` está reservado e vazio.
 
 ## Resolução de caminho: `findRoute`
 
@@ -151,7 +149,7 @@ O campo `access` é aplicado em duas camadas, ambas a partir do registro:
 Ambos são montados em `app/(dashboard)/layout.tsx`:
 
 ```tsx
-<AuthGuard><DashboardShell><AccessGate>{children}</AccessGate></DashboardShell></AuthGuard>
+<AuthGuard><AppShell><AccessGate>{children}</AccessGate></AppShell></AuthGuard>
 ```
 
 Consequências:
@@ -163,8 +161,7 @@ Consequências:
   (padrão em `app/(public)/modalidades/[id]/times/page.tsx`). Alternativa preferível: mover a página
   para `(dashboard)`.
 - `access` na UI é experiência, não segurança. Todo endpoint continua validando papel no backend.
-- Refinamento por seção: `/dashboard/:section` é `USER`, e `app/(dashboard)/dashboard/[section]/page.tsx`
-  filtra os itens de `SECTIONS` por papel (`canUse`, alias de `hasRole`).
+- A navegação (`AppShell`) só mostra os itens que `canAccess` libera para o papel atual.
 
 ## Procedimentos
 
@@ -181,8 +178,8 @@ Consequências:
    `export default async function Page({ params }: { params: Promise<{ id: string }> }) { const { id } = await params }`.
    Em Client Component, usar `use(params)`. O mesmo vale para `searchParams`.
 4. Manter a página fina: compor componentes de `features/` (ver `ARCHITECTURE.md`).
-5. Se a rota aparece na navegação do painel, referenciá-la em
-   `features/dashboard/constants/sections.ts` via `link("chave")`.
+5. Em `features/shell/constants/nav.ts`: adicionar o título em `PAGES` e, se a rota aparece no
+   menu, o item em `NAV`.
 6. Rodar `npm test`: `route-registry.test.ts` confirma a correspondência.
 
 ### Renomear caminho ou chave
@@ -195,7 +192,7 @@ Consequências:
 ### Remover rota
 
 Apagar a pasta da página e a entrada do registro (ambos, na mesma alteração). Corrigir os usos
-apontados pelo `typecheck` e remover itens correspondentes em `sections.ts`.
+apontados pelo `typecheck`, inclusive em `features/shell/constants/nav.ts`.
 
 ### Alterar o papel mínimo
 

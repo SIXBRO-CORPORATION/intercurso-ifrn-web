@@ -35,80 +35,79 @@ Divergências conhecidas (atenção ao usar a CLI):
   primitivos de `ui/` e vários componentes importam `cn` diretamente de `"cn"`; código novo usa
   `@/lib/utils`. Componentes gerados pela CLI trazem `@/shared/utils/cn`: corrigir o import para
   `@/lib/utils` (ou ajustar `aliases.utils` no `components.json` para `@/lib/utils`).
-- Os primitivos existentes foram **adaptados** ao design do produto (botão pill com gradiente,
-  variantes próprias). Não regenerar por cima com `shadcn add --overwrite`.
+- Os primitivos existentes foram **adaptados** ao design do produto (botão pill, variantes
+  próprias). Não regenerar por cima com `shadcn add --overwrite`.
 - `Slot` vem de `radix-ui` (`import { Slot } from "radix-ui"`).
 
 ### Primitivos presentes em `ui/`
 
-`alert`, `avatar`, `badge`, `button`, `calendar`, `card`, `chip`, `date-picker`, `dialog`, `empty`,
-`field-class` (classes comuns de campo), `popover`, `progress`, `skeleton`. Verificar a pasta antes de
-adicionar algo para evitar duplicação.
+`alert`, `avatar`, `badge`, `button`, `calendar`, `card` (`Card`, `CardHeader`), `chip`,
+`date-picker`, `dialog`, `empty`, `field-class` (classes comuns de campo), `popover`, `skeleton`,
+`tabs`. Verificar a pasta antes de adicionar algo para evitar duplicação.
 
-Variantes existentes (cva):
+Variantes existentes:
 
 | Componente | Variantes |
 | --- | --- |
-| `Button` `variant` | `default`, `outline`, `soft`, `neutral`, `danger`, `danger-soft`, `warning`, `dark`, `ghost`, `link` |
-| `Button` `size` | `default` (h-12), `lg`, `sm`, `icon`, `icon-sm`, `icon-lg` |
-| `Badge` `variant` | `neutral`, `success`, `danger`, `warning`, `dark` |
+| `Button` `variant` | `default`, `secondary` (contorno), `ghost`, `danger`, `danger-ghost` |
+| `Button` `size` | `default` (h-9), `sm`, `lg`, `icon`, `icon-sm` |
+| `Badge` `variant` | `neutral`, `success`, `warning`, `danger`, `live` |
 | `Alert` `variant` | `default`, `destructive`, `success`, `warning` |
+| `Avatar` `tone` / `size` | `crest`, `brand` / `xs`, `sm`, `default`, `lg` |
+| `TabsList` `variant` | `underline` (padrão), `pill` |
 
 `Button` aceita `asChild` (renderiza o filho, p.ex. `<Link>` ou `<a>`).
 
 ## Tokens (`app/app/globals.css`)
 
-Três blocos: `:root` (valores), `@theme inline` (mapeia variáveis para utilitários Tailwind) e
-`@theme` (raios e sombras), além de `@utility` para a escala tipográfica.
+O tema é único e **escuro**. Blocos: `:root` (valores), `@theme inline` (mapeia variáveis para
+utilitários Tailwind), `@theme` (raios e sombras) e `@utility` para a escala tipográfica.
 
 ### Cores semânticas
 
+Camadas, da mais funda à mais elevada: `bg-chrome` (barras e menus) → `bg-background` (página) →
+`bg-card` → `bg-muted` (hover) → `bg-selected`.
+
 | Uso | Utilitários |
 | --- | --- |
-| Fundo da página / texto base | `bg-background`, `text-foreground` (`text-ink`) |
-| Superfície / cartão | `bg-card` (`bg-surface`), `text-card-foreground` |
-| Ação primária | `bg-primary`, `text-primary-foreground`, `text-primary-dark`, `bg-action`, `hover:bg-action-hover` |
-| Tons suaves da marca | `bg-primary-soft`, `bg-primary-muted`, `bg-secondary`, `bg-accent` |
-| Texto secundário / apagado | `text-muted-foreground`, `text-text-secondary`, `text-faint` |
-| Campo / fundo neutro | `bg-field` (`bg-muted`) |
-| Borda / input / foco | `border-border`, `border-input`, `ring-ring` |
-| Erro | `text-destructive` (`text-danger`), `bg-danger-soft` |
+| Texto | `text-foreground`, `text-text-secondary`, `text-muted-foreground` |
+| Superfícies auxiliares | `bg-sunken` (bloco dentro de cartão), `bg-popover` (diálogo), `bg-field` (campo) |
+| Marca / ação primária | `bg-primary`, `text-primary-foreground`, `hover:bg-primary-hover`, `bg-primary-soft`, `text-primary-text` |
+| Ao vivo | `text-live`, `bg-live` |
+| Erro | `bg-destructive`, `bg-danger-soft`, `text-danger-text` |
 | Aviso | `bg-warning`, `bg-warning-soft`, `text-warning-text` |
-| Marca (legado, mapeado para os tokens acima) | `brand-50/100/200/500/600/700/800/900` |
+| Súmula | `bg-card-yellow`, `bg-card-red`, `bg-crest` (escudo) |
+| Borda / foco / fundo de diálogo | `border-border`, `border-border-strong`, `border-input`, `ring-ring`, `bg-overlay` |
 
-- Verde da marca: `--primary` (`#2f9e41`); versão escura `--primary-dark`.
-- Escala `brand-*` existe por compatibilidade (login). Preferir os tokens semânticos em código novo.
+- Verde somente em ação primária, estado ativo e indicadores; nunca como fundo de área.
 - Para nova cor: definir a variável em `:root`, mapear em `@theme inline` (`--color-<nome>`) e usar o
   utilitário. Nunca colocar o valor direto no componente.
-- Modo escuro: há apenas `@custom-variant dark`; o tema é claro. Não depender de `dark:`.
 
-### Raios, sombras, medidas
+### Raios, sombras
 
-- Raios: `rounded-xs/sm/md/lg/xl/2xl` (0,5 → 1,875rem); `--radius` base 1rem.
-- Sombras: `shadow-sm/md/lg`, `shadow-card`, `shadow-sheet`, `shadow-primary`.
-- Medidas: `--sidebar-width`, `--topbar-height`, `--navbar-height`, `--container-public`.
+- Raios: `rounded-xs` (4px), `sm` (6px), `md` (8px), `lg` (12px, cartões); botões são `rounded-full`.
+- Sombras: `shadow-toast`, `shadow-sheet` (diálogo e popover).
 
 ### Tipografia
 
-Fonte Poppins (variável `--font-poppins`, carregada em `app/layout.tsx`, pesos 400/500/700).
-Escala por utilitários próprios, em vez de combinar `text-*`/`font-*`:
+Fonte Poppins (variável `--font-poppins`, carregada em `app/layout.tsx`, pesos 400/500/600/700). O
+`body` já usa `type-body`. Escala por utilitários próprios:
 
-`type-large-title`, `type-title`, `type-heading`, `type-section`, `type-body-lg`, `type-body`,
-`type-body-sm`, `type-label`, `type-caption`, `type-overline`, `type-button`, `type-score`,
-`type-timer`, `type-display`, `type-h1`…`type-h4`.
+`type-score`, `type-h1`, `type-h2`, `type-h3`, `type-body`, `type-small`, `type-overline`.
 
-Títulos de página: `PageHeader` (`@/shared/components/page-header`) usa `type-large-title`.
+Título da tela: definido em `PAGES` (`features/shell/constants/nav.ts`) e renderizado pelo `AppShell`;
+a tela não repete o `h1`.
 
 ### Foco
 
-`focus-visible:ring-3 focus-visible:ring-ring/40` nos primitivos, ou o utilitário `focus-ring`.
-Elemento interativo novo mantém foco visível.
+`focus-visible:ring-3 focus-visible:ring-ring` nos primitivos (anel claro). Elemento interativo novo
+mantém foco visível; dentro de listas com borda recortada, usar também `focus-visible:ring-inset`.
 
 ## Componentes compartilhados (`src/shared/components/`)
 
-`back-button`, `live-dot`, `page-header`, `request-states` (`GridSkeleton`, `ErrorState`,
-`EmptyState`), `reveal-item`. Entram aqui apenas componentes sem domínio usados por duas ou mais
-features. Componente com regra de domínio fica em `features/<f>/components`.
+`live-dot`, `request-states` (`ListSkeleton`, `ErrorState`, `EmptyState`). Entram aqui apenas
+componentes sem domínio usados por duas ou mais features. Componente com regra de domínio fica em
+`features/<f>/components`.
 
 ## Adicionar um primitivo
 
@@ -133,8 +132,8 @@ npx shadcn@latest add <componente>
 - Diferença só de aparência: variante ou `className`, não componente duplicado.
 - Ícones: `lucide-react`, com `aria-hidden` quando decorativos; traço global em `svg.lucide`
   (`stroke-width: 2.2`).
-- Responsivo mobile-first (breakpoints `sm:`/`md:`/`lg:`); o painel alterna barra superior e sidebar
-  em `md`.
+- Responsivo mobile-first (breakpoints `sm:`/`md:`/`lg:`). Em `md` o `AppShell` troca a barra
+  inferior pelo cabeçalho (visitante e aluno) ou pelo menu lateral (monitor).
 - Texto de interface em pt-BR.
 
 ## Referência visual

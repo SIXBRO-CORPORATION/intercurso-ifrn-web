@@ -1,36 +1,17 @@
-import { Trophy } from "lucide-react"
-import { cn } from "cn"
+import Image from "next/image"
+import greenLogo from "@/assets/logo-intercurso_verde.png"
+import whiteLogo from "@/assets/logo-intercurso_branca.png"
 
-export function BrandMark({ tone = "dark" }: { tone?: "dark" | "light" }) {
-    const light = tone === "light"
+export function BrandMark({ white = false, compact = false }: { white?: boolean; compact?: boolean }) {
     return (
-        <div className="flex items-center gap-3">
-      <span
-          className={cn(
-              "grid size-10 place-items-center rounded-xl shadow-sm",
-              light ? "bg-white text-brand-600" : "bg-brand-600 text-white",
-          )}
-      >
-        <Trophy className="size-5" aria-hidden />
-      </span>
-            <span className="leading-none">
-        <span
-            className={cn(
-                "block text-lg font-bold tracking-tight",
-                light ? "text-white" : "text-brand-900",
+        <span className="flex items-center gap-2.5 whitespace-nowrap">
+            <Image src={white ? whiteLogo : greenLogo} alt="" width={24} height={40} className={compact ? "h-7 w-auto" : "h-10 w-auto"} />
+            {!compact && (
+                <span className="flex flex-col gap-0.5">
+                    <span className="text-[1.0625rem] leading-tight font-bold">Intercurso</span>
+                    <span className="text-[0.6875rem] leading-tight text-muted-foreground">IFRN · Pau dos Ferros</span>
+                </span>
             )}
-        >
-          Intercurso
         </span>
-        <span
-            className={cn(
-                "block pt-1 text-[11px] font-semibold tracking-[0.2em]",
-                light ? "text-brand-100" : "text-brand-600",
-            )}
-        >
-          IFRN
-        </span>
-      </span>
-        </div>
     )
 }

@@ -44,7 +44,7 @@ export function CorrectEventDialog({ match, eventId, onClose }: Props) {
         )}
 
         {correct.isError && (
-          <div role="alert" className="type-body-sm rounded-lg bg-danger-soft px-4 py-3 text-danger">
+          <div role="alert" className="rounded-md bg-danger-soft px-4 py-3 text-danger-text">
             {parseMatchActionError(correct.error)}
           </div>
         )}
@@ -81,7 +81,7 @@ export function CorrectEventDialog({ match, eventId, onClose }: Props) {
             <Button onClick={onClose}>Fechar</Button>
           ) : (
             <>
-              <Button variant="neutral" disabled={correct.isPending} onClick={onClose}>
+              <Button variant="secondary" disabled={correct.isPending} onClick={onClose}>
                 Cancelar
               </Button>
               <Button variant="danger" disabled={correct.isPending} onClick={confirm}>

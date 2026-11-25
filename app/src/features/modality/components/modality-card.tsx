@@ -1,10 +1,9 @@
 import Link from "next/link"
 import { href } from "@/core/routes/route-registry"
-import { Mars, Users, Venus, VenusAndMars, type LucideIcon } from "lucide-react"
+import { ChevronRight, Mars, Venus, VenusAndMars, type LucideIcon } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar"
 import { Badge } from "@/shared/components/ui/badge"
 import { Button } from "@/shared/components/ui/button"
-import { Card } from "@/shared/components/ui/card"
 import { resolvePhotoSrc } from "@/shared/utils/photo-src"
 import type { GenderMode, Modality } from "../schemas/modality-schema"
 import { getGenderModeLabel, getGenderRequirements, getTeamSizeLabel } from "../utils/modality-rules"
@@ -22,58 +21,37 @@ export function ModalityCard({ modality }: { modality: Modality }) {
   const headingId = `modality-${modality.modality_id}`
 
   return (
-      <Card asChild className="flex h-full flex-col gap-4 p-4">
-        <article aria-labelledby={headingId}>
-          <header className="flex items-center gap-3">
-            <Avatar size="lg">
-              {photo && <AvatarImage src={photo} />}
-              <AvatarFallback>
-                <Icon className="size-6" />
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <h3 id={headingId} className="type-section truncate text-ink">
-                {modality.name}
-              </h3>
-              <p className="type-body-sm text-muted-foreground">{getGenderModeLabel(modality.gender_mode)}</p>
-            </div>
-          </header>
-
-          <Card variant="field" asChild>
-            <dl className="grid grid-cols-2 gap-3 p-3">
-              <div>
-                <dt className="type-caption text-muted-foreground">Elenco</dt>
-                <dd className="type-label mt-0.5 flex items-center gap-1.5 text-ink">
-                  <Users className="size-4 text-primary" aria-hidden />
-                  {getTeamSizeLabel(modality)}
-                </dd>
-              </div>
-              <div>
-                <dt className="type-caption text-muted-foreground">Mín. / Máx.</dt>
-                <dd className="type-label mt-0.5 text-ink">
-                  {modality.min_members} / {modality.max_members}
-                </dd>
-              </div>
-            </dl>
-          </Card>
-
-          {requirements.length > 0 && (
-              <ul aria-label="Composição por gênero" className="flex flex-wrap gap-2">
-                {requirements.map((requirement) => (
-                    <li key={requirement}>
-                      <Badge variant="success">{requirement}</Badge>
-                    </li>
-                ))}
-              </ul>
-          )}
-
-          <Button asChild variant="soft" size="sm" className="mt-auto self-start">
-            <Link href={href("modalityTeams", { id: modality.modality_id })}>
-              <Users aria-hidden /> Ver times
-              <span className="sr-only"> de {modality.name}</span>
-            </Link>
-          </Button>
-        </article>
-      </Card>
+    <article aria-labelledby={headingId} className="flex min-h-15 flex-wrap items-center gap-3 px-4 py-2">
+      <Avatar size="sm">
+        {photo && <AvatarImage src={photo} />}
+        <AvatarFallback>
+          <Icon className="size-4" />
+        </AvatarFallback>
+      </Avatar>
+      <div className="min-w-40 flex-1">
+        <h2 id={headingId} className="truncate font-semibold">
+          {modality.name}
+        </h2>
+        <p className="type-small text-muted-foreground">
+          {getGenderModeLabel(modality.gender_mode)} · {getTeamSizeLabel(modality)}
+        </p>
+      </div>
+      {requirements.length > 0 && (
+        <ul aria-label="Composição por gênero" className="flex flex-wrap gap-1.5">
+          {requirements.map((requirement) => (
+            <li key={requirement}>
+              <Badge>{requirement}</Badge>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Button asChild variant="ghost" size="sm" className="ml-auto">
+        <Link href={href("modalityTeams", { id: modality.modality_id })}>
+          Ver times
+          <span className="sr-only"> de {modality.name}</span>
+          <ChevronRight aria-hidden />
+        </Link>
+      </Button>
+    </article>
   )
 }

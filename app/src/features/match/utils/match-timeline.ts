@@ -35,6 +35,7 @@ export function timelineRows(match: MatchDetail) {
       label,
       clock: volley ? null : formatClock(e.clock_seconds),
       team: (e.team_id && teams.get(e.team_id)) || null,
+      side: !e.team_id ? null : e.team_id === match.team1?.team_id ? "home" : e.team_id === match.team2?.team_id ? "away" : null,
       player: (e.player_id && players.get(e.player_id)) || null,
     }]
   })

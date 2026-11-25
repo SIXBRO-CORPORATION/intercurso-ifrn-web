@@ -13,7 +13,7 @@ entra com necessidade clara e deve ser registrada aqui.
 | Tailwind CSS | 4 | estilo por tokens em CSS | `app/app/globals.css` |
 | shadcn + `radix-ui` | CLI 4 | primitivos de UI | `src/shared/components/ui/` |
 | class-variance-authority | 0.7 | variantes de componente | `ui/` |
-| `cn`, clsx, tailwind-merge | — | merge de classes (`cn` via `@/lib/utils`) | UI |
+| `cn` | — | merge de classes (`cn` via `@/lib/utils`) | UI |
 | tw-animate-css | — | animações dos primitivos | `globals.css` |
 | lucide-react | 1.x | ícones | UI |
 | axios | 1.x | HTTP | `src/lib/axios.ts`, `repositories/` |
@@ -64,7 +64,7 @@ Sem biblioteca: `EventSource` nativo encapsulado em `infrastructure/realtime`. V
 
 ### Testes — Vitest
 
-Config em `app/vitest.config.ts` (a `vitest.config.mts` é redundante e não é usada). Projetos `unit`
+Config em `app/vitest.config.ts`. Projetos `unit`
 (node, `src/**/*.test.ts`) e `components` (jsdom, `src/**/*.test.tsx`, setup em `src/tests/setup.ts`).
 Convenções em `CONVENTIONS.md`.
 

@@ -20,7 +20,7 @@ function KickDots({ team, results }: { team: MatchTeam; results: boolean[] }) {
       {Array.from({ length: slots }, (_, i) => (
         <span
           key={i}
-          className={cn("size-3 rounded-full", results[i] === undefined ? "bg-white/20" : results[i] ? "bg-primary" : "bg-danger")}
+          className={cn("size-3 rounded-full", results[i] === undefined ? "bg-muted" : results[i] ? "bg-primary" : "bg-destructive")}
         />
       ))}
     </div>
@@ -37,20 +37,20 @@ export function PenaltyShootout({ match }: { match: MatchDetail }) {
 
   return (
     <div className="space-y-4">
-      <section aria-label="Disputa de pênaltis" className="space-y-5 rounded-xl bg-ink p-5 text-white shadow-lg">
+      <section aria-label="Disputa de pênaltis" className="space-y-4 rounded-md bg-sunken p-4">
         <header className="space-y-1 text-center">
-          <p className="type-overline text-white/80">Disputa de pênaltis</p>
-          <p className="type-label text-white/70">
+          <p className="type-overline text-live">Disputa de pênaltis</p>
+          <p className="type-small text-text-secondary">
             Placar oficial {team1.score} × {team2.score}
           </p>
         </header>
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-center">
-          <p className="type-body-lg wrap-break-word font-bold">{team1.name}</p>
-          <p className="type-score tabular-nums">
+          <p className="type-h3 wrap-break-word">{team1.name}</p>
+          <p className="type-score text-live">
             <span className="sr-only">Placar dos pênaltis </span>
             {team1.penalty_score ?? 0} – {team2.penalty_score ?? 0}
           </p>
-          <p className="type-body-lg wrap-break-word font-bold">{team2.name}</p>
+          <p className="type-h3 wrap-break-word">{team2.name}</p>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <KickDots team={team1} results={kickResults(kicks, team1.team_id)} />
@@ -64,7 +64,7 @@ export function PenaltyShootout({ match }: { match: MatchDetail }) {
               <Check aria-hidden /> Gol
             </Button>
             <Button
-              variant="danger-soft"
+              variant="danger-ghost"
               size="lg"
               disabled={kick.isPending}
               aria-label={`Perdeu ${team.name}`}
@@ -76,7 +76,7 @@ export function PenaltyShootout({ match }: { match: MatchDetail }) {
         ))}
       </div>
       {kick.isError && (
-        <div role="alert" className="type-body-sm rounded-lg bg-danger-soft px-4 py-3 text-danger">
+        <div role="alert" className="rounded-md bg-danger-soft px-4 py-3 text-danger-text">
           {parseMatchActionError(kick.error)}
         </div>
       )}

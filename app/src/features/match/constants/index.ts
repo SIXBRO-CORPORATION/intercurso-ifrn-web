@@ -27,13 +27,13 @@ export const EVENT_TYPES: Record<string, { label: string; icon: LucideIcon; clas
   PERIOD_START: { label: "Início do período", icon: Play },
   PERIOD_END: { label: "Fim do período", icon: Pause },
   SET_END: { label: "Fim do set", icon: Flag },
-  GOAL: { label: "Gol", icon: CircleDot, className: "text-primary" },
-  POINT: { label: "Ponto", icon: Plus, className: "text-primary" },
-  PENALTY_GOAL: { label: "Pênalti convertido", icon: CircleDot, className: "text-primary" },
-  PENALTY_MISS: { label: "Pênalti perdido", icon: CircleX, className: "text-danger" },
-  CARD_YELLOW: { label: "Cartão amarelo", icon: Square, className: "fill-warning text-warning" },
-  CARD_RED: { label: "Cartão vermelho", icon: Square, className: "fill-danger text-danger" },
-  EXPULSION: { label: "Expulsão", icon: UserX, className: "text-danger" },
+  GOAL: { label: "Gol", icon: CircleDot, className: "text-primary-text" },
+  POINT: { label: "Ponto", icon: Plus, className: "text-primary-text" },
+  PENALTY_GOAL: { label: "Pênalti convertido", icon: CircleDot, className: "text-primary-text" },
+  PENALTY_MISS: { label: "Pênalti perdido", icon: CircleX, className: "text-muted-foreground" },
+  CARD_YELLOW: { label: "Cartão amarelo", icon: Square, className: "fill-card-yellow text-card-yellow" },
+  CARD_RED: { label: "Cartão vermelho", icon: Square, className: "fill-card-red text-card-red" },
+  EXPULSION: { label: "Expulsão", icon: UserX, className: "text-card-red" },
 }
 
 export const SCORE_TYPE_LABELS: Record<string, string> = { GOALS: "Gols", POINTS: "Pontos", SETS: "Sets" }

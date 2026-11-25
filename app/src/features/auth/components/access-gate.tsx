@@ -7,7 +7,7 @@ import { useAuth } from "../contexts/auth-context"
 
 export function PermissionDenied() {
   return (
-    <p role="alert" className="p-6 text-destructive">
+    <p role="alert" className="p-6 text-danger-text">
       Você não tem permissão para acessar esta página.
     </p>
   )

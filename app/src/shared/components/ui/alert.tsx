@@ -3,14 +3,14 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
 const alertVariants = cva(
-    "relative grid w-full grid-cols-[0_1fr] items-start gap-y-1 rounded-lg border px-4 py-3 text-sm has-[>svg]:grid-cols-[1rem_1fr] has-[>svg]:gap-x-3 [&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current",
+    "relative grid w-full grid-cols-[0_1fr] items-start gap-y-1 rounded-md border px-4 py-3 text-sm has-[>svg]:grid-cols-[1rem_1fr] has-[>svg]:gap-x-3 [&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current",
     {
         variants: {
             variant: {
                 default: "border-border bg-card text-card-foreground",
-                destructive: "border-transparent bg-danger-soft text-danger *:data-[slot=alert-description]:text-danger/90",
-                success: "border-transparent bg-primary-soft text-primary-dark *:data-[slot=alert-description]:text-primary-dark/90",
-                warning: "border-transparent bg-warning-soft text-warning-text *:data-[slot=alert-description]:text-warning-text/90",
+                destructive: "border-transparent bg-danger-soft text-danger-text *:data-[slot=alert-description]:text-danger-text",
+                success: "border-transparent bg-primary-soft text-primary-text *:data-[slot=alert-description]:text-primary-text",
+                warning: "border-transparent bg-warning-soft text-warning-text *:data-[slot=alert-description]:text-warning-text",
             },
         },
         defaultVariants: {
@@ -24,14 +24,14 @@ function Alert({ className, variant, ...props }: React.ComponentProps<"div"> & V
 }
 
 function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
-    return <div data-slot="alert-title" className={cn("type-section col-start-2 min-h-4", className)} {...props} />
+    return <div data-slot="alert-title" className={cn("type-h3 col-start-2 min-h-4", className)} {...props} />
 }
 
 function AlertDescription({ className, ...props }: React.ComponentProps<"div">) {
     return (
         <div
             data-slot="alert-description"
-            className={cn("type-body-sm col-start-2 grid justify-items-start gap-1 text-muted-foreground", className)}
+            className={cn("type-small col-start-2 grid justify-items-start gap-1 text-text-secondary", className)}
             {...props}
         />
     )

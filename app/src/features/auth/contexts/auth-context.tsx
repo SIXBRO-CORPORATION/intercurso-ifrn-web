@@ -15,12 +15,11 @@ import {
   type SessionStatus,
   type SessionUser,
 } from "@/core/auth/session-store"
-import { bootstrapSession, logout, startLogin } from "../services/auth-service"
+import { bootstrapSession, logout } from "../services/auth-service"
 
 type AuthContextValue = {
   status: SessionStatus
   user: SessionUser | null
-  login: () => void
   logout: () => Promise<void>
 }
 
@@ -34,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ ...session, login: startLogin, logout }),
+    () => ({ ...session, logout }),
     [session],
   )
 

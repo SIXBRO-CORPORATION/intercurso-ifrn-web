@@ -16,18 +16,17 @@ mecanismo de sessão.
   renova o token uma vez em caso de 401.
 - Papéis: `USER` < `MONITOR` < `ADMIN`. A UI só controla experiência; a autorização efetiva é do
   backend.
-- Estado de sessão na UI: `useAuth()` (`status`, `user`, `login`, `logout`).
+- Estado de sessão na UI: `useAuth()` (`status`, `user`, `logout`).
 
 ## Mapa de arquivos
 
 | Arquivo | Papel |
 | --- | --- |
 | `src/core/auth/session-store.ts` | store externo: token, `SessionSnapshot`, `subscribe`, `setSession`, `clearSession` |
-| `src/features/auth/services/auth-service.ts` | `bootstrapSession`, `refreshSession`, `logout`, `startLogin` |
+| `src/features/auth/services/auth-service.ts` | `bootstrapSession`, `refreshSession`, `logout` |
 | `src/features/auth/contexts/auth-context.tsx` | `AuthProvider` e `useAuth` |
 | `src/features/auth/components/auth-guard.tsx` | exige sessão; redireciona anônimo ao login |
 | `src/features/auth/components/access-gate.tsx` | exige papel conforme o registro de rotas; `PermissionDenied` |
-| `src/features/auth/hooks/use-require-auth.ts` | executa uma ação só se autenticado; senão inicia o login |
 | `src/features/auth/constants/index.ts` | `LOGIN_URL`, mensagens de erro de login |
 | `src/lib/axios.ts` | `api` (Bearer + retry em 401), `authHttp` (cookies), `setRefreshHandler` |
 | `src/infrastructure/storage/return-to-storage.ts` | caminho de retorno pós-login (`sessionStorage`) |
@@ -68,17 +67,16 @@ AuthProvider monta → bootstrapSession() → refreshSession()
 ### Login
 
 ```text
-startLogin(): saveReturnPath(pathname + search) → window.location.assign(LOGIN_URL)
+LoginButton: saveReturnPath(pathname + search) → navega para LOGIN_URL
   → backend → SUAP → backend define o cookie de refresh → /auth/callback
 callback: espera status !== "loading"
-  authenticated → router.replace(takeReturnPath() ?? href("dashboard"))
+  authenticated → router.replace(takeReturnPath() ?? href("matches"))
   anonymous     → router.replace(href("login") + "?erro=sessao_nao_recuperada")
 ```
 
 - `LOGIN_URL` = `` `${AUTH_API}/login/suap` ``. A navegação é completa (não SPA) porque atravessa
   SUAP; `/api/*` é reescrito para o backend em `next.config.ts` (`NEXT_API_URL`).
-- Botão de login: `LoginButton` é um `<a href={LOGIN_URL}>` que grava o caminho de retorno no clique;
-  `login()` do contexto (`startLogin`) faz o equivalente por código.
+- Botão de login: `LoginButton` é um `<a href={LOGIN_URL}>` que grava o caminho de retorno no clique.
 - Erros: a tela de login lê `?erro=` e mapeia em `LOGIN_ERROR_MESSAGES`
   (`state_invalido`, `login_falhou`, `sessao_nao_recuperada`); código desconhecido usa
   `GENERIC_LOGIN_ERROR`. Texto sempre em português.
@@ -98,8 +96,8 @@ deduplica chamadas concorrentes (`inflight`): várias requisições com 401 simu
 
 ### Logout
 
-`logout()` chama `POST /api/auth/logout` (ignora falha de rede) e depois `clearSession()`. O
-`DashboardShell` oferece o botão "Sair".
+`logout()` chama `POST /api/auth/logout` (ignora falha de rede) e depois `clearSession()`. O botão
+"Sair" fica no menu lateral do monitor (`AppShell`) e na tela de perfil (`/perfil`).
 
 ### Caminho de retorno
 
@@ -110,7 +108,7 @@ deduplica chamadas concorrentes (`inflight`): várias requisições com 401 simu
   `/\`, caracteres de controle e barras invertidas) e que não comece com `/login` ou `/auth`.
   Isso evita open redirect e laço de login.
 - Qualquer falha de storage (modo privado, bloqueio) é engolida: segue sem retorno.
-- Quem grava: `AuthGuard` (anônimo em página protegida) e `startLogin`.
+- Quem grava: `AuthGuard` (anônimo em página protegida) e `LoginButton`.
 
 ## Guards e papéis na UI
 
@@ -118,7 +116,6 @@ deduplica chamadas concorrentes (`inflight`): várias requisições com 401 simu
 | --- | --- |
 | `AuthGuard` | página/árvore que exige apenas sessão |
 | `AccessGate` | exige o papel do registro para a rota atual (só funciona onde `findRoute` resolve o caminho) |
-| `useRequireAuth()` | ação disparada por usuário em página pública; anônimo vai ao login, `loading` não faz nada (hook disponível, ainda sem uso) |
 | `hasRole` / `canAccess` | mostrar ou ocultar elementos por papel |
 
 Regras:
@@ -129,8 +126,8 @@ Regras:
   prematuro.
 - Ocultar um botão por papel **não** substitui a checagem do backend. Todo endpoint sensível valida
   o papel; a UI deve tratar 401/403 do backend como possibilidade normal.
-- Papel mínimo de uma rota: somente em `ROUTES[chave].access`. Papel exigido por um item de seção
-  do painel: `role` em `features/dashboard/constants/sections.ts`.
+- Papel mínimo de uma rota: somente em `ROUTES[chave].access`. A navegação deriva a visibilidade
+  desse campo.
 
 ## Como usar em código novo
 

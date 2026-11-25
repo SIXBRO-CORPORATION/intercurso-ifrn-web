@@ -50,10 +50,10 @@ export function CreateTeamDetailsStep({
                         type="button"
                         onClick={() => fileInput.current?.click()}
                         aria-label={photoUrl ? "Trocar logo da equipe" : "Adicionar logo da equipe"}
-                        className="rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
+                        className="rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring"
                     >
-                        <Avatar className="size-24 border-2 border-primary-muted" src={photoUrl}>
-                            {photoUrl ? undefined : <Camera className="size-7" aria-hidden />}
+                        <Avatar className="size-16" src={photoUrl}>
+                            {photoUrl ? undefined : <Camera className="size-6" aria-hidden />}
                         </Avatar>
                     </button>
                     <input
@@ -68,15 +68,15 @@ export function CreateTeamDetailsStep({
                             event.target.value = ""
                         }}
                     />
-                    <span className="type-label text-primary-dark">{photoUrl ? "Trocar logo" : "Adicionar logo"}</span>
-                    <span className="type-caption text-muted-foreground">opcional · PNG, JPG ou WEBP até 5 MB</span>
+                    <span className="type-h3">{photoUrl ? "Trocar logo" : "Adicionar logo"}</span>
+                    <span className="type-small text-muted-foreground">opcional · PNG, JPG ou WEBP até 5 MB</span>
                     {photoUrl && (
                         <Button type="button" variant="ghost" size="sm" onClick={onPhotoRemove}>
                             <X aria-hidden /> Remover
                         </Button>
                     )}
                     {photoError && (
-                        <p role="alert" className="type-caption text-danger">
+                        <p role="alert" className="type-small text-danger-text">
                             {photoError}
                         </p>
                     )}
@@ -85,10 +85,10 @@ export function CreateTeamDetailsStep({
                 <div className="space-y-4">
                     <div className="space-y-1.5">
                         <div className="flex items-baseline justify-between gap-2">
-                            <label htmlFor="team-name" className="type-label text-ink">
-                                Nome da equipe <span className="text-danger">*</span>
+                            <label htmlFor="team-name" className="type-small font-semibold text-text-secondary">
+                                Nome da equipe <span className="text-danger-text">*</span>
                             </label>
-                            <span className="type-caption text-faint" aria-hidden>
+                            <span className="type-small text-muted-foreground" aria-hidden>
                                 {name.length}/{TEAM_NAME_MAX}
                             </span>
                         </div>
@@ -103,12 +103,12 @@ export function CreateTeamDetailsStep({
                             className={fieldClass}
                             {...form.register("name")}
                         />
-                        <p id="team-name-help" role={nameError ? "alert" : undefined} className={cn("type-body-sm", nameError ? "text-danger" : "text-muted-foreground")}>
+                        <p id="team-name-help" role={nameError ? "alert" : undefined} className={cn("type-small", nameError ? "text-danger-text" : "text-muted-foreground")}>
                             {nameError ?? "Use um nome único para a sua equipe."}
                         </p>
                     </div>
 
-                    <Card variant="field" asChild>
+                    <Card asChild className="rounded-md bg-sunken">
                         <dl className="divide-y divide-border px-4 py-1">
                             {[
                                 ["Modalidade", modality.name],
@@ -116,8 +116,8 @@ export function CreateTeamDetailsStep({
                                 ["Integrantes", getTeamSizeLabel(modality)],
                             ].map(([label, value]) => (
                                 <div key={label} className="flex items-center justify-between gap-3 py-2.5">
-                                    <dt className="type-body-sm text-muted-foreground">{label}</dt>
-                                    <dd className="type-label text-right text-ink">{value}</dd>
+                                    <dt className="type-small text-text-secondary">{label}</dt>
+                                    <dd className="type-h3 text-right">{value}</dd>
                                 </div>
                             ))}
                         </dl>

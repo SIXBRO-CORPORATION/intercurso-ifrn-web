@@ -16,7 +16,7 @@ describe("findRoute", () => {
 
   it("estático vence dinâmico", () => {
     expect(findRoute("/partidas/gerenciar")).toBe(ROUTES.manageMatches)
-    expect(findRoute("/dashboard/partidas")).toBe(ROUTES.dashboardSection)
+    expect(findRoute("/partidas/outra")).toBe(ROUTES.match)
   })
 
   it("ignora barra final", () => {
@@ -27,7 +27,7 @@ describe("findRoute", () => {
   it("não casa caminho não registrado", () => {
     expect(findRoute("/admin")).toBeUndefined()
     expect(findRoute("/equipes/nova")).toBeUndefined()
-    expect(findRoute("/dashboard/a/b")).toBeUndefined()
+    expect(findRoute("/perfil/a/b")).toBeUndefined()
   })
 })
 

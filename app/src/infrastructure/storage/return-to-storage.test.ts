@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import { isSafeReturnPath } from "./return-to-storage"
 
 describe("isSafeReturnPath", () => {
-  it.each(["/dashboard", "/teams/42?tab=members", "/"])("aceita %s", (p) => {
+  it.each(["/perfil", "/teams/42?tab=members", "/"])("aceita %s", (p) => {
     expect(isSafeReturnPath(p)).toBe(true)
   })
 

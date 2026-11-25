@@ -34,7 +34,7 @@ export function FinishMatch({ match }: { match: MatchDetail }) {
 
   return (
     <>
-      <Button variant="dark" disabled={blocked || action.isPending} onClick={start}>
+      <Button variant="danger" disabled={blocked || action.isPending} onClick={start}>
         <Flag aria-hidden /> Finalizar partida
       </Button>
       {open && result && (

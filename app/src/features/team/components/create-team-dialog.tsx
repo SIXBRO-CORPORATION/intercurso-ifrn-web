@@ -34,9 +34,9 @@ function Stepper({ current }: { current: number }) {
         <ol className="grid grid-cols-2 gap-3" aria-label="Etapas">
             {STEPS.map((label, index) => (
                 <li key={label} aria-current={index === current ? "step" : undefined} className="space-y-1.5">
-                    <span className={cn("block h-1.5 rounded-full", index <= current ? "bg-primary" : "bg-border")} />
-                    <span className={cn("type-label flex items-center gap-1.5", index <= current ? "text-ink" : "text-faint")}>
-                        {index < current && <Check className="size-4 text-primary" aria-hidden />}
+                    <span className={cn("block h-1 rounded-full", index <= current ? "bg-primary" : "bg-muted")} />
+                    <span className={cn("type-small flex items-center gap-1.5 font-semibold", index <= current ? "text-foreground" : "text-muted-foreground")}>
+                        {index < current && <Check className="size-4 text-primary-text" aria-hidden />}
                         {label}
                     </span>
                 </li>
@@ -136,7 +136,7 @@ export function CreateTeamDialog({ season, takenModalityIds, onClose }: Props) {
                             onSubmit={submit}
                         />
                         {create.isError && (
-                            <div role="alert" className="type-body-sm rounded-lg bg-danger-soft px-4 py-3 text-danger">
+                            <div role="alert" className="rounded-md bg-danger-soft px-4 py-3 text-danger-text">
                                 {parseCreateTeamError(create.error)}
                             </div>
                         )}
@@ -147,7 +147,7 @@ export function CreateTeamDialog({ season, takenModalityIds, onClose }: Props) {
                 <DialogFooter>
                     {step === "modality" && (
                         <>
-                            <Button type="button" variant="neutral" onClick={close}>
+                            <Button type="button" variant="secondary" onClick={close}>
                                 Cancelar
                             </Button>
                             <Button type="button" disabled={!modality || !registrationOpen} onClick={() => setStep("details")}>
@@ -157,7 +157,7 @@ export function CreateTeamDialog({ season, takenModalityIds, onClose }: Props) {
                     )}
                     {step === "details" && (
                         <>
-                            <Button type="button" variant="neutral" disabled={create.isPending} onClick={() => setStep("modality")}>
+                            <Button type="button" variant="secondary" disabled={create.isPending} onClick={() => setStep("modality")}>
                                 Voltar
                             </Button>
                             <Button type="submit" form={CREATE_TEAM_FORM_ID} disabled={create.isPending || !registrationOpen}>

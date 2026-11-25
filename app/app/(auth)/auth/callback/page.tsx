@@ -17,7 +17,7 @@ export default function AuthCallbackPage() {
     done.current = true
     router.replace(
         status === "authenticated"
-            ? (takeReturnPath() ?? href("dashboard"))
+            ? (takeReturnPath() ?? href("matches"))
             : `${href("login")}?erro=sessao_nao_recuperada`,
     )
   }, [status, router])

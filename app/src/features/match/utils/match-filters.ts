@@ -1,4 +1,6 @@
-import { endOfDay, isValid, parseISO, startOfDay } from "date-fns"
+import { addDays, differenceInCalendarDays, endOfDay, format, isValid, parseISO, startOfDay } from "date-fns"
+import { ptBR } from "date-fns/locale"
+import { parseIsoDate, toIsoDate } from "@/lib/iso-date"
 import { MAX_PAGE_SIZE, PAGE_SIZE, STATUS_OPTIONS } from "../constants"
 import type { MatchFilters, MatchStatus } from "../types/match"
 
@@ -33,6 +35,27 @@ export function toQuery(filters: MatchFilters, compact = false) {
 // Qualquer mudança de filtro volta para a página 1; só `page` no patch a sobrescreve.
 export function withFilters(filters: MatchFilters, patch: Partial<MatchFilters>): MatchFilters {
   return { ...filters, page: 1, ...patch }
+}
+
+const RELATIVE_DAYS: Record<number, string> = { [-1]: "Ontem", 0: "Hoje", 1: "Amanhã" }
+const dayMonth = (date: Date) => format(date, "dd/MM")
+
+export function dayLabel({ date_from, date_to }: Pick<MatchFilters, "date_from" | "date_to">, today: Date) {
+  const from = parseIsoDate(date_from)
+  const to = parseIsoDate(date_to)
+  if (from && to && date_from === date_to) {
+    return RELATIVE_DAYS[differenceInCalendarDays(from, today)] ?? format(from, "EEEEEE dd/MM", { locale: ptBR })
+  }
+  if (from && to) return `${dayMonth(from)} – ${dayMonth(to)}`
+  if (from) return `Desde ${dayMonth(from)}`
+  if (to) return `Até ${dayMonth(to)}`
+  return "Todas as datas"
+}
+
+// Navegar por dia parte do dia filtrado; sem filtro, parte de hoje.
+export function shiftDay({ date_from, date_to }: Pick<MatchFilters, "date_from" | "date_to">, offset: number, today: Date) {
+  const day = toIsoDate(addDays(parseIsoDate(date_from) ?? parseIsoDate(date_to) ?? today, offset))
+  return { date_from: day, date_to: day }
 }
 
 function boundary(value: string | null, edge: (date: Date) => Date) {

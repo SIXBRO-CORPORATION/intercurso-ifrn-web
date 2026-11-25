@@ -83,11 +83,11 @@ app/
 ├── app/                 # App Router: páginas finas, layouts, globals.css
 │   ├── (public)/        # sem login obrigatório
 │   ├── (auth)/          # login e callback do SUAP
-│   └── (dashboard)/     # painel autenticado (AuthGuard + AccessGate)
+│   └── (dashboard)/     # telas autenticadas (AuthGuard + AccessGate)
 ├── proxy.ts             # barra caminhos fora do registro de rotas
 └── src/
     ├── core/            # contratos globais: routes, auth/session-store, realtime/types, config/endpoints
-    ├── features/        # auth, dashboard, match, modality, season, team
+    ├── features/        # auth, match, modality, season, shell, team
     ├── infrastructure/  # realtime/realtime-client (SSE), storage/return-to-storage
     ├── lib/             # axios (api, authHttp), query-provider, utils (cn), iso-date
     ├── shared/          # components (+ ui/ do shadcn), schemas/envelope-schema, utils
@@ -96,17 +96,16 @@ app/
 
 ## Estado atual (pontos que costumam gerar dúvida)
 
-- `app/app/page.tsx` (rota `home`, `/`) ainda é o placeholder do create-next-app.
+- `app/app/page.tsx` (rota `home`, `/`) redireciona para `/partidas`.
 - Pastas com apenas `.gitkeep` são reservadas e sem código: `core/http`, `core/errors`, `config`,
   `constants`, `infrastructure/http`, `shared/hooks`, `shared/models`, `shared/types`, `styles`,
   `app/api`.
-- Os domínios `users` e `bracket` ainda não existem no frontend. Itens de
-  `features/dashboard/constants/sections.ts` sem `href` representam telas futuras.
+- Os domínios `users` e `bracket` ainda não existem no frontend. Do protótipo, ainda não há telas de
+  temporada, cadastro de modalidade, chaveamento, detalhe/análise de equipe e convite; os itens de menu
+  correspondentes entram em `features/shell/constants/nav.ts` junto com as rotas.
 - A criação de equipe é um diálogo em `/equipes` (`create-team-dialog.tsx`), sem rota própria. O link
-  de `my-team-card.tsx` (`/equipes/:id`) e o link de convite gerado (`TEAM_INVITE_PATH`, `/convite/:token`)
-  apontam para telas ainda não registradas e resultam em 404 até a rota existir.
-- `app/vitest.config.ts` (com os projetos `unit` e `components`) é a configuração efetiva do Vitest;
-  `app/vitest.config.mts` é redundante e não é usada.
+  de convite gerado (`TEAM_INVITE_PATH`, `/convite/:token`) aponta para uma tela ainda não registrada e
+  resulta em 404 até a rota existir.
 - Primitivos de `shared/components/ui` importam `cn` do pacote `cn`; `aliases.utils` do
   `components.json` aponta para um caminho inexistente (detalhes em `docs/SHADCN_UI.md`).
 - Não há MSW nem Playwright instalados.

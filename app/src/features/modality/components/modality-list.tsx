@@ -1,6 +1,7 @@
 "use client"
 
-import { EmptyState, ErrorState, GridSkeleton } from "@/shared/components/request-states"
+import { EmptyState, ErrorState, ListSkeleton } from "@/shared/components/request-states"
+import { Card } from "@/shared/components/ui/card"
 import { useModalities } from "../hooks/use-modalities"
 import { ModalityCard } from "./modality-card"
 
@@ -9,7 +10,7 @@ export const MODALITIES_LOADING_LABEL = "Carregando modalidades…"
 export function ModalityList({ seasonId }: { seasonId?: string }) {
     const modalities = useModalities(seasonId)
 
-    if (modalities.isPending) return <GridSkeleton label={MODALITIES_LOADING_LABEL} />
+    if (modalities.isPending) return <ListSkeleton label={MODALITIES_LOADING_LABEL} />
     if (modalities.isError) {
         return (
             <ErrorState
@@ -24,12 +25,14 @@ export function ModalityList({ seasonId }: { seasonId?: string }) {
     }
 
     return (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {modalities.data.map((modality) => (
-                <li key={modality.modality_id}>
-                    <ModalityCard modality={modality} />
-                </li>
-            ))}
-        </ul>
+        <Card asChild>
+            <ul className="divide-y divide-border">
+                {modalities.data.map((modality) => (
+                    <li key={modality.modality_id}>
+                        <ModalityCard modality={modality} />
+                    </li>
+                ))}
+            </ul>
+        </Card>
     )
 }

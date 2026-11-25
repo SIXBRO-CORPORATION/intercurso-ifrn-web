@@ -1,10 +1,5 @@
-import { PublicHeader } from "@/features/dashboard/components/public-header"
+import { AppShell } from "@/features/shell/components/app-shell"
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <PublicHeader />
-      {children}
-    </>
-  )
+  return <AppShell>{children}</AppShell>
 }

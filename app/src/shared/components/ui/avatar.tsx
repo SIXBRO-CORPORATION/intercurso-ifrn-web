@@ -6,27 +6,28 @@ import { Avatar as AvatarPrimitive } from "radix-ui"
 const avatarVariants = cva("relative inline-grid shrink-0 place-items-center overflow-hidden rounded-full font-bold uppercase", {
   variants: {
     tone: {
-      success: "bg-primary-soft text-primary-dark",
-      danger: "bg-danger-soft text-danger",
-      warning: "bg-warning-soft text-warning-text",
-      dark: "bg-ink text-white",
-      inverse: "bg-white/20 text-white",
+      crest: "bg-crest text-text-secondary",
+      brand: "bg-primary-soft text-primary-text",
     },
     size: {
+      xs: "size-5 text-[0.5625rem]",
       sm: "size-8 text-xs",
-      default: "size-10 text-base",
+      default: "size-9 text-sm",
       lg: "size-14 text-xl",
     },
   },
   defaultVariants: {
-    tone: "success",
+    tone: "crest",
     size: "default",
   },
 })
 
+const initials = (name: string | undefined) =>
+  name?.trim().split(/\s+/).slice(0, 2).map((word) => word[0]).join("") || "?"
+
 type AvatarProps = React.ComponentProps<typeof AvatarPrimitive.Root> &
     VariantProps<typeof avatarVariants> & {
-  /** Atalho: inicial do nome como fallback e, se houver `src`, a imagem por cima. */
+  /** Atalho: iniciais do nome como fallback e, se houver `src`, a imagem por cima. */
   name?: string
   src?: string | null
 }
@@ -37,7 +38,7 @@ function Avatar({ name, src, tone, size, className, children, ...props }: Avatar
         {children ?? (
             <>
               {src && <AvatarImage src={src} />}
-              <AvatarFallback>{name?.trim().charAt(0) || "?"}</AvatarFallback>
+              <AvatarFallback>{initials(name)}</AvatarFallback>
             </>
         )}
       </AvatarPrimitive.Root>
@@ -52,4 +53,4 @@ function AvatarFallback({ className, ...props }: React.ComponentProps<typeof Ava
   return <AvatarPrimitive.Fallback data-slot="avatar-fallback" className={cn("grid size-full place-items-center", className)} {...props} />
 }
 
-export { Avatar, AvatarImage, AvatarFallback, avatarVariants }
+export { Avatar, AvatarImage, AvatarFallback }

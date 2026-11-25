@@ -1,3 +1,4 @@
+import { Avatar } from "@/shared/components/ui/avatar"
 import type { MatchDetail } from "../types/match"
 
 export function MatchRoster({ match }: { match: MatchDetail }) {
@@ -6,24 +7,26 @@ export function MatchRoster({ match }: { match: MatchDetail }) {
     { team: match.team2, players: match.team2_players },
   ]
   return (
-    <section className="space-y-3">
-      <h2 className="type-section text-ink">Elencos</h2>
-      <div className="grid gap-4 sm:grid-cols-2">
-        {sides.map(({ team, players }, i) => (
-          <div key={team?.team_id ?? i} className="space-y-2">
-            <h3 className="type-label font-bold text-primary-dark">{team?.name ?? "A definir"}</h3>
-            {players.length ? (
-              <ul className="space-y-1">
-                {players.map((p) => (
-                  <li key={p.user_id} className="type-body-sm rounded-md bg-field px-3 py-2 text-ink">{p.name}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="type-body-sm text-muted-foreground">Elenco não disponível.</p>
-            )}
-          </div>
-        ))}
-      </div>
-    </section>
+    <div className="grid grid-cols-2 gap-4 p-4">
+      {sides.map(({ team, players }, i) => (
+        <section key={team?.team_id ?? i} className="min-w-0">
+          <h2 className="type-h3 flex items-center gap-2 border-b border-border pb-2">
+            <Avatar size="xs" name={team?.name} />
+            <span className="truncate">{team?.name ?? "A definir"}</span>
+          </h2>
+          {players.length ? (
+            <ul>
+              {players.map((p) => (
+                <li key={p.user_id} className="type-small flex min-h-8 items-center border-b border-border text-text-secondary">
+                  {p.name}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="type-small pt-2 text-muted-foreground">Elenco não disponível.</p>
+          )}
+        </section>
+      ))}
+    </div>
   )
 }

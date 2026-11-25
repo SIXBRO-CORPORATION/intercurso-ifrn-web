@@ -24,7 +24,6 @@ export function EndShootout({ match }: { match: MatchDetail }) {
   return (
     <>
       <Button
-        variant="dark"
         disabled={!winner}
         title={winner ? undefined : "A disputa precisa ter um vencedor para ser encerrada"}
         onClick={() => {

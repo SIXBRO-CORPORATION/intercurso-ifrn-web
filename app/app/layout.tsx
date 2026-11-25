@@ -6,7 +6,7 @@ import { QueryProvider } from "@/lib/query-provider";
 
 const poppins = Poppins({
   variable: "--font-poppins",
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
   display: "swap",
 });

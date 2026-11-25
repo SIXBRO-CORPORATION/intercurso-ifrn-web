@@ -3,18 +3,18 @@
 import { useState } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useModalities } from "@/features/modality"
-import { cn } from "@/lib/utils"
-import { ErrorState, EmptyState } from "@/shared/components/request-states"
-import { Badge } from "@/shared/components/ui/badge"
+import { ErrorState, EmptyState, ListSkeleton } from "@/shared/components/request-states"
+import { Card, CardHeader } from "@/shared/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs"
 import { MAX_PAGE_SIZE } from "../constants"
 import { useMatches } from "../hooks/use-matches"
 import { useMatchesLive } from "../hooks/use-matches-live"
 import type { Match, MatchFilters, MatchStatus } from "../types/match"
+import { clockLimit } from "../utils/match-card"
 import { parseFilters, toQuery, withFilters } from "../utils/match-filters"
-import { MatchListLoading } from "./match-list-states"
 import { MatchPagination } from "./match-pagination"
 import { MonitorMatchFilters } from "./monitor-match-filters"
-import { FinishedMatchTable, LiveMatchTable, ScheduledMatchTable } from "./monitor-match-row"
+import { MonitorMatchRow } from "./monitor-match-row"
 import { StartMatchDialog } from "./start-match-dialog"
 
 const TABS: { value: MatchStatus; label: string; empty: string }[] = [
@@ -47,42 +47,40 @@ export function MonitorMatchList({ seasonId }: { seasonId: string }) {
   const liveItems = live.data?.items ?? []
 
   return (
-    <div className="space-y-4">
-      <div role="tablist" aria-label="Status das partidas" className="flex gap-6 border-b border-border">
+    <Tabs value={tab.value} onValueChange={(value) => update({ status: value as MatchStatus })} className="space-y-4">
+      <TabsList variant="pill" aria-label="Status das partidas">
         {TABS.map((t) => {
-          const selected = t.value === tab.value
+          const count =
+            t.value === "IN_PROGRESS" ? live.data?.total : t.value === tab.value ? list.data?.total : undefined
           return (
-            <button
-              key={t.value}
-              type="button"
-              role="tab"
-              aria-selected={selected}
-              onClick={() => update({ status: t.value })}
-              className={cn(
-                "type-label -mb-px inline-flex cursor-pointer items-center gap-2 border-b-2 pb-3",
-                selected ? "border-primary text-primary-dark" : "border-transparent text-muted-foreground hover:text-ink",
-              )}
-            >
+            <TabsTrigger key={t.value} value={t.value}>
               {t.label}
-              {t.value === "IN_PROGRESS" && live.isSuccess && live.data.total > 0 && <Badge variant="danger">{live.data.total}</Badge>}
-              {selected && !isLive && list.isSuccess && <Badge variant="success">{list.data.total}</Badge>}
-            </button>
+              {!!count && <span className="text-[0.6875rem] opacity-75">{count}</span>}
+            </TabsTrigger>
           )
         })}
-      </div>
+      </TabsList>
 
-      <section role="tabpanel" aria-label={tab.label} className="space-y-4">
+      <TabsContent value={tab.value} className="space-y-4">
         {!isLive && <MonitorMatchFilters filters={filters} modalities={modalities.data ?? []} onChange={update} />}
-        {list.isPending && <MatchListLoading />}
+        {list.isPending && <ListSkeleton label="Carregando partidas…" />}
         {list.isError && <ErrorState title="Não foi possível carregar as partidas." onRetry={() => list.refetch()} />}
         {list.isSuccess && (
           <>
             {list.data.items.length ? (
-              <>
-                {tab.value === "IN_PROGRESS" && <LiveMatchTable matches={list.data.items} modalities={modalities.data ?? []} />}
-                {tab.value === "SCHEDULED" && <ScheduledMatchTable matches={list.data.items} onStart={setStarting} />}
-                {tab.value === "FINISHED" && <FinishedMatchTable matches={list.data.items} />}
-              </>
+              <Card>
+                <CardHeader title={tab.label} />
+                <ul className="divide-y divide-border">
+                  {list.data.items.map((match) => (
+                    <MonitorMatchRow
+                      key={match.match_id}
+                      match={match}
+                      limit={clockLimit(modalities.data?.find((m) => m.modality_id === match.modality_id), match.current_period)}
+                      onStart={setStarting}
+                    />
+                  ))}
+                </ul>
+              </Card>
             ) : (
               <EmptyState
                 title={tab.empty}
@@ -94,9 +92,9 @@ export function MonitorMatchList({ seasonId }: { seasonId: string }) {
             )}
           </>
         )}
-      </section>
+      </TabsContent>
 
       {starting && <StartMatchDialog match={starting} liveMatches={liveItems} onClose={() => setStarting(null)} />}
-    </div>
+    </Tabs>
   )
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { parseFilters, toApiQuery, toQuery, withFilters } from "./match-filters"
+import { dayLabel, parseFilters, shiftDay, toApiQuery, toQuery, withFilters } from "./match-filters"
 
 describe("match filters", () => {
   it("aplica padrões e descarta valores inválidos", () => {
@@ -30,6 +30,21 @@ describe("match filters", () => {
     expect([from.getDate(), from.getHours(), from.getMinutes()]).toEqual([23, 0, 0])
     expect([to.getDate(), to.getHours(), to.getMinutes(), to.getSeconds()]).toEqual([24, 23, 59, 59])
     expect(q.get("status")).toBe("FINISHED")
+  })
+
+  it("rotula o dia filtrado, o intervalo e a ausência de filtro", () => {
+    const today = new Date(2026, 4, 21)
+    const day = (date_from: string, date_to = date_from) => dayLabel({ date_from, date_to }, today)
+    expect([day("2026-05-20"), day("2026-05-21"), day("2026-05-22")]).toEqual(["Ontem", "Hoje", "Amanhã"])
+    expect(day("2026-05-25")).toMatch(/25\/05$/)
+    expect(day("2026-05-01", "2026-05-10")).toBe("01/05 – 10/05")
+    expect([day("2026-05-01", ""), day("", "2026-05-10"), day("")]).toEqual(["Desde 01/05", "Até 10/05", "Todas as datas"])
+  })
+
+  it("navega um dia a partir do filtro ou de hoje", () => {
+    const today = new Date(2026, 4, 31)
+    expect(shiftDay({ date_from: "", date_to: "" }, 1, today)).toEqual({ date_from: "2026-06-01", date_to: "2026-06-01" })
+    expect(shiftDay({ date_from: "2026-05-02", date_to: "2026-05-02" }, -1, today)).toEqual({ date_from: "2026-05-01", date_to: "2026-05-01" })
   })
 
   it("mantém a query intacta sem datas válidas", () => {

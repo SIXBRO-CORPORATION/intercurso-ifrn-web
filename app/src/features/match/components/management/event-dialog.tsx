@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { CircleDot, Plus, Square } from "lucide-react"
+import { CircleDot, Plus } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/shared/components/ui/alert"
 import { Button } from "@/shared/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/shared/components/ui/dialog"
@@ -61,7 +61,7 @@ export function EventDialog({ match, team, player, yellows, onClose }: Props) {
         </DialogDescription>
 
         {register.isError && (
-          <div role="alert" className="type-body-sm rounded-lg bg-danger-soft px-4 py-3 text-danger">
+          <div role="alert" className="rounded-md bg-danger-soft px-4 py-3 text-danger-text">
             {parseRegisterEventError(register.error)}
           </div>
         )}
@@ -73,7 +73,7 @@ export function EventDialog({ match, team, player, yellows, onClose }: Props) {
               <AlertDescription>{WARNINGS[confirming](player.name).text}</AlertDescription>
             </Alert>
             <DialogFooter>
-              <Button variant="neutral" disabled={register.isPending} onClick={() => setConfirming(null)}>
+              <Button variant="secondary" disabled={register.isPending} onClick={() => setConfirming(null)}>
                 Voltar
               </Button>
               <Button variant="danger" disabled={register.isPending} onClick={() => submit(confirming)}>
@@ -82,22 +82,22 @@ export function EventDialog({ match, team, player, yellows, onClose }: Props) {
             </DialogFooter>
           </>
         ) : (
-          <div className="grid gap-3">
+          <div className="grid gap-2">
             <Button size="lg" disabled={register.isPending} onClick={() => submit("GOAL")}>
               <ScoreIcon aria-hidden /> {scoreLabel}
             </Button>
             <Button
-              variant="warning"
+              variant="secondary"
               size="lg"
               disabled={register.isPending}
               onClick={() => (yellows > 0 ? setConfirming("YELLOW") : submit("YELLOW"))}
             >
-              <Square className="fill-current" aria-hidden /> Cartão amarelo
+              <span className="h-3.5 w-2.5 rounded-[2px] bg-card-yellow" aria-hidden /> Cartão amarelo
             </Button>
-            <Button variant="danger" size="lg" disabled={register.isPending} onClick={() => setConfirming("RED")}>
-              <Square className="fill-current" aria-hidden /> Cartão vermelho
+            <Button variant="secondary" size="lg" disabled={register.isPending} onClick={() => setConfirming("RED")}>
+              <span className="h-3.5 w-2.5 rounded-[2px] bg-card-red" aria-hidden /> Cartão vermelho
             </Button>
-            <p className="type-caption text-center text-faint">Esc para cancelar</p>
+            <p className="type-small text-center text-muted-foreground">Esc para cancelar</p>
           </div>
         )}
       </DialogContent>

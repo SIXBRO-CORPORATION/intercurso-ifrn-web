@@ -8,7 +8,7 @@ export const TEAM_INVITE_PATH = "/convite"
 
 export const TEAM_STATUS_LABELS: Record<TeamStatus, string> = {
     DRAFT: "Rascunho",
-    SUBMITTED: "Aguardando aprovação",
+    SUBMITTED: "Em análise",
     APPROVED: "Aprovada",
     REJECTED: "Rejeitada",
 }

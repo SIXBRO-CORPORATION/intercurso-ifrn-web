@@ -27,7 +27,7 @@ export function DatePicker({ value, onChange, min, max, placeholder = "dd/mm/aaa
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button type="button" className={cn(fieldClass, "flex cursor-pointer items-center justify-between gap-2 text-left", !selected && "text-faint", className)}>
+        <button type="button" className={cn(fieldClass, "flex cursor-pointer items-center justify-between gap-2 text-left", !selected && "text-muted-foreground", className)}>
           <span className="truncate">{selected ? formatBrDate(selected) : placeholder}</span>
           <CalendarDays aria-hidden className="size-4 shrink-0 text-muted-foreground" />
         </button>

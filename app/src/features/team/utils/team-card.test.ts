@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { getMembersPercent, getTeamCountLabel, getTeamRoleLabel } from "./team-card"
+import { getTeamCountLabel, getTeamRoleLabel } from "./team-card"
 
 describe("getTeamCountLabel", () => {
     it("inclui o limite quando existe", () => {
@@ -9,17 +9,6 @@ describe("getTeamCountLabel", () => {
 
     it("omite o limite quando ausente", () => {
         expect(getTeamCountLabel(3, null)).toBe("3 integrantes")
-    })
-})
-
-describe("getMembersPercent", () => {
-    it("calcula o preenchimento limitado a 100%", () => {
-        expect(getMembersPercent(6, 12)).toBe(50)
-        expect(getMembersPercent(15, 12)).toBe(100)
-    })
-
-    it("retorna zero sem limite", () => {
-        expect(getMembersPercent(3, null)).toBe(0)
     })
 })
 

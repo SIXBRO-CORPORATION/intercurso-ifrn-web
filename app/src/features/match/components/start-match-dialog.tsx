@@ -29,7 +29,7 @@ export function StartMatchDialog({ match, liveMatches, onClose }: Props) {
           {teamsLabel(match)} · {match.modality_name}. A partida passa para em andamento e o cronômetro começa agora.
         </DialogDescription>
         {failure && (
-          <div role="alert" className="type-body-sm rounded-lg bg-danger-soft px-4 py-3 text-danger">
+          <div role="alert" className="rounded-md bg-danger-soft px-4 py-3 text-danger-text">
             <p>{failure.message}</p>
             {failure.ongoingMatchId && (
               <Link
@@ -42,7 +42,7 @@ export function StartMatchDialog({ match, liveMatches, onClose }: Props) {
           </div>
         )}
         <DialogFooter>
-          <Button variant="neutral" disabled={start.isPending} onClick={onClose}>
+          <Button variant="secondary" disabled={start.isPending} onClick={onClose}>
             Cancelar
           </Button>
           <Button disabled={start.isPending} onClick={() => start.mutate(match.match_id, { onSuccess: onClose })}>

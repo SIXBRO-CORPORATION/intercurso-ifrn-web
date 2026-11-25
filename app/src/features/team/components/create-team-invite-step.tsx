@@ -29,7 +29,7 @@ export function CreateTeamInviteStep({ team }: { team: CreatedTeam }) {
             </Alert>
             {url ? (
                 <div className="space-y-1.5">
-                    <label htmlFor="team-invite-link" className="type-label text-ink">
+                    <label htmlFor="team-invite-link" className="type-small font-semibold text-text-secondary">
                         Link de convite
                     </label>
                     <div className="flex gap-2">
@@ -40,11 +40,11 @@ export function CreateTeamInviteStep({ team }: { team: CreatedTeam }) {
                             className={fieldClass}
                             onFocus={(event) => event.target.select()}
                         />
-                        <Button type="button" variant="soft" size="icon" onClick={copy} aria-label="Copiar link de convite">
+                        <Button type="button" variant="secondary" size="icon" onClick={copy} aria-label="Copiar link de convite">
                             {copied ? <Check aria-hidden /> : <Copy aria-hidden />}
                         </Button>
                     </div>
-                    <p role="status" className="type-body-sm text-muted-foreground">
+                    <p role="status" className="type-small text-muted-foreground">
                         {copied ? "Link copiado!" : "Quem tiver o link pode pedir para entrar na equipe."}
                     </p>
                 </div>

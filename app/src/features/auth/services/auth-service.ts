@@ -7,8 +7,6 @@ import {
 } from "@/core/auth/session-store"
 import { AUTH_API } from "@/core/config/endpoints"
 import { authHttp, setRefreshHandler } from "@/lib/axios"
-import { saveReturnPath } from "@/infrastructure/storage/return-to-storage"
-import { LOGIN_URL } from "../constants"
 
 type Envelope<T> = { data: T | null }
 type RefreshData = { access_token: string }
@@ -87,11 +85,6 @@ export async function logout() {
   } catch {
   }
   clearSession()
-}
-
-export function startLogin() {
-  saveReturnPath(window.location.pathname + window.location.search)
-  window.location.assign(LOGIN_URL)
 }
 
 setRefreshHandler(refreshSession)

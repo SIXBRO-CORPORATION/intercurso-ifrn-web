@@ -67,7 +67,7 @@ Nomenclatura, idioma, componentes, imports, testes e commits. Estrutura de pasta
 - Server Component por padrão. `"use client"` somente com estado, efeito, evento de browser ou
   hook de TanStack Query/`useAuth`.
 - Telas que consomem dados tratam carregamento, erro, vazio e sucesso com
-  `@/shared/components/request-states` (`GridSkeleton`, `ErrorState`, `EmptyState`).
+  `@/shared/components/request-states` (`ListSkeleton`, `ErrorState`, `EmptyState`).
 - Estado lido pelo pai: componente controlado.
 - `page.tsx`/`layout.tsx` finos: sem regra de negócio, sem HTTP.
 - `params` e `searchParams` são `Promise` (Next 16): `await` em Server Component, `use()` em Client

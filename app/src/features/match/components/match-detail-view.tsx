@@ -1,9 +1,12 @@
 "use client"
 
-import { Button } from "@/shared/components/ui/button"
+import { ErrorState, EmptyState } from "@/shared/components/request-states"
+import { Card } from "@/shared/components/ui/card"
+import { Skeleton } from "@/shared/components/ui/skeleton"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs"
 import { useMatch } from "../hooks/use-match"
+import { phaseLabel } from "../utils/match-card"
 import { MatchHeader } from "./match-header"
-import { MatchListMessage } from "./match-list-states"
 import { MatchRoster } from "./match-roster"
 import { MatchTimeline } from "./match-timeline"
 
@@ -12,24 +15,34 @@ export function MatchDetailView({ id }: { id: string }) {
 
   if (result.isPending) {
     return (
-      <div role="status" aria-busy="true" className="h-56 rounded-xl bg-border/60 motion-safe:animate-pulse">
+      <div role="status" aria-busy="true">
         <span className="sr-only">Carregando partida…</span>
+        <Skeleton className="h-96 rounded-lg" />
       </div>
     )
   }
-  if (result.isError) {
-    return (
-      <MatchListMessage alert title="Não foi possível carregar a partida.">
-        <Button variant="danger" onClick={() => result.refetch()}>Tentar novamente</Button>
-      </MatchListMessage>
-    )
-  }
-  if (!result.data) return <MatchListMessage title="Partida não encontrada." />
+  if (result.isError) return <ErrorState title="Não foi possível carregar a partida." onRetry={() => result.refetch()} />
+  const match = result.data
+  if (!match) return <EmptyState title="Partida não encontrada." />
+
   return (
-    <div className="space-y-8">
-      <MatchHeader match={result.data} />
-      <MatchTimeline match={result.data} />
-      <MatchRoster match={result.data} />
-    </div>
+    <Card>
+      <p className="type-overline bg-muted px-4 py-2.5 text-center text-text-secondary">
+        {[match.modality_name, phaseLabel(match)].filter(Boolean).join(" · ")}
+      </p>
+      <MatchHeader match={match} />
+      <Tabs defaultValue="events">
+        <TabsList aria-label="Detalhes da partida">
+          <TabsTrigger value="events">Eventos</TabsTrigger>
+          <TabsTrigger value="lineups">Escalações</TabsTrigger>
+        </TabsList>
+        <TabsContent value="events">
+          <MatchTimeline match={match} />
+        </TabsContent>
+        <TabsContent value="lineups">
+          <MatchRoster match={match} />
+        </TabsContent>
+      </Tabs>
+    </Card>
   )
 }

@@ -23,12 +23,12 @@ export function EndPeriodDialog({ match, onClose }: Props) {
         <DialogTitle>Finalizar {periodLabel(match.current_period) ?? "período"}?</DialogTitle>
         <DialogDescription>O cronômetro será pausado. Depois você poderá iniciar o próximo período.</DialogDescription>
         {end.isError && (
-          <div role="alert" className="type-body-sm rounded-lg bg-danger-soft px-4 py-3 text-danger">
+          <div role="alert" className="rounded-md bg-danger-soft px-4 py-3 text-danger-text">
             {parseMatchActionError(end.error)}
           </div>
         )}
         <DialogFooter>
-          <Button variant="neutral" disabled={end.isPending} onClick={onClose}>
+          <Button variant="secondary" disabled={end.isPending} onClick={onClose}>
             Cancelar
           </Button>
           <Button disabled={end.isPending} onClick={() => end.mutate("period/end", { onSuccess: onClose })}>

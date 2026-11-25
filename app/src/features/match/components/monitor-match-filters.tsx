@@ -12,7 +12,7 @@ type Props = {
   onChange: (patch: Partial<MatchFilters>) => void
 }
 
-const label = "type-label flex flex-col gap-1 text-muted-foreground"
+const label = "type-small flex flex-col gap-1.5 font-semibold text-text-secondary"
 
 export function MonitorMatchFilters({ filters, modalities, onChange }: Props) {
   const active = !!(filters.modality_id || filters.date_from || filters.date_to)

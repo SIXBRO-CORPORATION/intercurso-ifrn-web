@@ -19,12 +19,12 @@ type ResultProps = {
 export function ResultBox({ team1, team2, score1, score2, winner, label, penalties }: ResultProps) {
   const side = (score: number, index: 0 | 1) => (penalties ? `${score}(${penalties[index]})` : score)
   return (
-    <div className="space-y-2 rounded-xl bg-field p-5 text-center">
+    <div className="space-y-2 rounded-md bg-sunken p-4 text-center">
       <div className="grid grid-cols-2 gap-2">
-        <p className="type-body-lg wrap-break-word font-bold text-ink">{team1.name}</p>
-        <p className="type-body-lg wrap-break-word font-bold text-ink">{team2.name}</p>
+        <p className="type-h3 wrap-break-word">{team1.name}</p>
+        <p className="type-h3 wrap-break-word">{team2.name}</p>
       </div>
-      <p className="type-large-title tabular-nums text-ink">
+      <p className="text-4xl font-bold tabular-nums">
         <span className="sr-only">Placar </span>
         {side(score1, 0)} × {side(score2, 1)}
       </p>
@@ -70,12 +70,12 @@ export function ResultDialog({
         <DialogDescription>{description}</DialogDescription>
         <ResultBox {...result} />
         {error && (
-          <div role="alert" className="type-body-sm rounded-lg bg-danger-soft px-4 py-3 text-danger">
+          <div role="alert" className="rounded-md bg-danger-soft px-4 py-3 text-danger-text">
             {error}
           </div>
         )}
         <DialogFooter>
-          <Button variant="neutral" disabled={pending} onClick={onCancel}>
+          <Button variant="secondary" disabled={pending} onClick={onCancel}>
             {cancelLabel}
           </Button>
           <Button disabled={pending} onClick={onConfirm}>

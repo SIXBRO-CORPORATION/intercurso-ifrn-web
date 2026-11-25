@@ -9,7 +9,7 @@ import { buttonVariants } from "./button"
 
 function Calendar({ className, classNames, showOutsideDays = true, ...props }: React.ComponentProps<typeof DayPicker>) {
   const d = getDefaultClassNames()
-  const nav = cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "size-9 p-0 select-none aria-disabled:opacity-40", )
+  const nav = cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "size-9 p-0 select-none aria-disabled:opacity-40")
 
   return (
     <DayPicker
@@ -37,10 +37,10 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: R
         ),
         today: cn("[&>button]:border-primary", d.today),
         selected: cn(
-          "[&>button]:bg-primary [&>button]:text-primary-foreground [&>button]:hover:bg-primary [&>button]:hover:brightness-105",
+          "[&>button]:bg-primary [&>button]:text-primary-foreground [&>button]:hover:bg-primary-hover",
           d.selected,
         ),
-        outside: cn("[&>button]:text-faint", d.outside),
+        outside: cn("[&>button]:text-muted-foreground", d.outside),
         disabled: cn("[&>button]:pointer-events-none [&>button]:opacity-35", d.disabled),
         hidden: cn("invisible", d.hidden),
         ...classNames,

@@ -19,7 +19,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 
   if (status !== "authenticated") {
     return (
-      <p role="status" className="p-6 text-muted-foreground">
+      <p role="status" className="p-6 text-text-secondary">
         Carregando…
       </p>
     )

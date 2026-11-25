@@ -39,12 +39,12 @@ export function SetPrompt({ match }: { match: MatchDetail }) {
             label="Vencedor"
           />
           {end.isError && (
-            <div role="alert" className="type-body-sm rounded-lg bg-danger-soft px-4 py-3 text-danger">
+            <div role="alert" className="rounded-md bg-danger-soft px-4 py-3 text-danger-text">
               {parseMatchActionError(end.error)}
             </div>
           )}
           <DialogFooter>
-            <Button variant="neutral" disabled={end.isPending} onClick={() => setDismissedMatch(result.winner.team_id)}>
+            <Button variant="secondary" disabled={end.isPending} onClick={() => setDismissedMatch(result.winner.team_id)}>
               Continuar partida
             </Button>
             <Button disabled={end.isPending} onClick={() => end.mutate("finish")}>
@@ -80,12 +80,12 @@ export function SetPrompt({ match }: { match: MatchDetail }) {
           label="Vencedor do set"
         />
         {end.isError && (
-          <div role="alert" className="type-body-sm rounded-lg bg-danger-soft px-4 py-3 text-danger">
+          <div role="alert" className="rounded-md bg-danger-soft px-4 py-3 text-danger-text">
             {parseMatchActionError(end.error)}
           </div>
         )}
         <DialogFooter>
-          <Button variant="neutral" disabled={end.isPending} onClick={() => setDismissedSet(key)}>
+          <Button variant="secondary" disabled={end.isPending} onClick={() => setDismissedSet(key)}>
             Voltar ao jogo
           </Button>
           <Button disabled={end.isPending} onClick={() => end.mutate("set/end")}>
