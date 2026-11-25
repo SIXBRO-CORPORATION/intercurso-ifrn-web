@@ -37,7 +37,7 @@ describe("SeasonList", () => {
   it("lista nome, ano, status e período com link para o detalhe", () => {
     state.value = { isPending: false, isError: false, data: [season] }
     render(<SeasonList />)
-    const link = screen.getByRole("link")
+    const link = screen.getByRole("link", { name: /Intercurso 2026/ })
     expect(link.getAttribute("href")).toBe("/temporadas/s1")
     expect(link.textContent).toContain("Intercurso 2026")
     expect(link.textContent).toContain("2026")

@@ -69,6 +69,7 @@ desconhecido vindo do backend é tratado como `USER`. `"public"` não exige sess
 | `manageMatches` | `/partidas/gerenciar` | MONITOR | `(dashboard)` |
 | `manageMatch` | `/partidas/gerenciar/:id` | MONITOR | `(dashboard)` |
 | `seasons` | `/temporadas` | MONITOR | `(dashboard)` |
+| `seasonCreate` | `/temporadas/nova` | MONITOR | `(dashboard)` |
 | `season` | `/temporadas/:id` | MONITOR | `(dashboard)` |
 
 A tabela é um retrato; o arquivo prevalece em caso de divergência.

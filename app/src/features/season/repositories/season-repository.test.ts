@@ -1,7 +1,7 @@
 import { AxiosError, type InternalAxiosRequestConfig } from "axios"
 import { beforeEach, describe, expect, it } from "vitest"
 import { api } from "@/lib/axios"
-import { getSeason, listSeasons } from "./season-repository"
+import { createSeason, getSeason, listSeasons } from "./season-repository"
 
 const season = { season_id: "s1", name: "Intercurso 2026", year: 2026, status: "DRAFT", active: false }
 
@@ -50,5 +50,38 @@ describe("getSeason", () => {
   it("rejeita detalhe sem modality_ids", async () => {
     reply = { data: season }
     await expect(getSeason("s1", signal)).rejects.toThrow()
+  })
+})
+
+describe("createSeason", () => {
+  const form = {
+    name: "Intercurso 2027",
+    year: 2027,
+    modality_ids: ["m1", "m2"],
+    open_immediately: false,
+    registration_start_date: "2027-03-01T08:00",
+    registration_end_date: "2027-03-20T23:59",
+  }
+
+  it("envia multipart com datas em ISO, todas as modalidades e o regulamento", async () => {
+    reply = { data: { ...season, season_id: "s9" } }
+    const file = new File(["%PDF"], "r.pdf", { type: "application/pdf" })
+    const result = await createSeason({ ...form, rules_document: file })
+    const body = calls[0].data as FormData
+    expect(calls[0].method).toBe("post")
+    expect(calls[0].url).toBe("/api/season/")
+    expect(body.getAll("modality_ids")).toEqual(["m1", "m2"])
+    expect(body.get("registration_start_date")).toBe(new Date(form.registration_start_date).toISOString())
+    expect(body.get("open_immediately")).toBe("false")
+    expect(body.get("rules_document")).toBeInstanceOf(File)
+    expect(result.season_id).toBe("s9")
+  })
+
+  it("omite a data de abertura e o arquivo ao abrir imediatamente", async () => {
+    reply = { data: season }
+    await createSeason({ ...form, open_immediately: true })
+    const body = calls[0].data as FormData
+    expect(body.has("registration_start_date")).toBe(false)
+    expect(body.has("rules_document")).toBe(false)
   })
 })

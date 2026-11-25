@@ -1,16 +1,33 @@
 "use client"
 
 import Link from "next/link"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, Plus } from "lucide-react"
 import { href } from "@/core/routes/route-registry"
 import { EmptyState, ErrorState, ListSkeleton } from "@/shared/components/request-states"
 import { Badge } from "@/shared/components/ui/badge"
+import { Button } from "@/shared/components/ui/button"
 import { Card } from "@/shared/components/ui/card"
 import { SEASON_STATUS_BADGES } from "../constants"
 import { useSeasons } from "../hooks/use-seasons"
 import { getRegistrationPeriodLabel } from "../utils/registration-period"
 
 export function SeasonList() {
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button asChild size="sm">
+          <Link href={href("seasonCreate")}>
+            <Plus aria-hidden />
+            Nova temporada
+          </Link>
+        </Button>
+      </div>
+      <SeasonListContent />
+    </div>
+  )
+}
+
+function SeasonListContent() {
   const seasons = useSeasons()
 
   if (seasons.isPending) return <ListSkeleton label="Carregando temporadas…" />

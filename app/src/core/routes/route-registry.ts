@@ -13,6 +13,7 @@ export const ROUTES = {
   manageMatches: { path: "/partidas/gerenciar", access: { minRole: "MONITOR" } },
   manageMatch: { path: "/partidas/gerenciar/:id", access: { minRole: "MONITOR" } },
   seasons: { path: "/temporadas", access: { minRole: "MONITOR" } },
+  seasonCreate: { path: "/temporadas/nova", access: { minRole: "MONITOR" } },
   season: { path: "/temporadas/:id", access: { minRole: "MONITOR" } },
 } as const satisfies Record<string, RouteEntry>
 

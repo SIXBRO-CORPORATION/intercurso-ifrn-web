@@ -26,6 +26,7 @@ export const PAGES: Page[] = [
   { key: "manageMatches", title: "Partidas" },
   { key: "manageMatch", title: "Controle da partida", back: "manageMatches" },
   { key: "seasons", title: "Temporadas" },
+  { key: "seasonCreate", title: "Criar temporada", back: "seasons" },
   { key: "season", title: "Temporada", back: "seasons" },
   { key: "profile", title: "Perfil" },
 ]
