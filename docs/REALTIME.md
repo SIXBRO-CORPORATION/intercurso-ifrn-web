@@ -1,8 +1,20 @@
 # Realtime (SSE) — Intercurso IFRN Web
 
-Guia de uso do cliente de tempo real e do contrato com o backend. A divisão de responsabilidades
+Cliente de tempo real (SSE) e contrato com o backend. A divisão de responsabilidades
 (infraestrutura x feature) está em [`ARCHITECTURE.md`](ARCHITECTURE.md); as decisões do backend
-estão nos ADRs 0003 e 0004 do repositório da API.
+estão nos ADRs 0003 e 0004 do repositório da API. Caminhos relativos a `app/`.
+
+## Resumo operacional
+
+- Consumo sempre por `connectRealtime` (`src/infrastructure/realtime/realtime-client.ts`), chamado
+  dentro de um hook da feature, num `useEffect` que devolve a função de desconexão.
+- Canais existentes: `match` e `season`. URL do stream: `/api/{canal}/{id}/live`.
+- Autenticação por ticket de 30s (`POST /api/realtime/ticket`); o cliente cuida de ticket,
+  reconexão e backoff.
+- Obrigatório na feature: schema Zod do evento, lista `eventNames`, reconciliação por `GET` em
+  `onReconnect`.
+- Hooks existentes: `features/match/hooks/use-match-live.ts` (canal `match`) e
+  `use-matches-live.ts` (canal `season`).
 
 ## Fluxo
 
@@ -93,47 +105,57 @@ Backoff: 1s dobrando até 30s, com jitter de 50% a 100%. Volta a 1s quando a con
 
 ## Como consumir numa feature
 
-Hook em `src/features/match/hooks/use-match-live.ts`:
+Hook real em `src/features/match/hooks/use-match-live.ts`:
 
 ```ts
 "use client"
 
 import { useEffect, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-
 import type { RealtimeStatus } from "@/core/realtime/types"
-import { MATCH_EVENT_NAMES } from "@/features/match/constants/match-event-names"
-import { matchEventSchema } from "@/features/match/schemas/match-event-schema"
 import { connectRealtime } from "@/infrastructure/realtime/realtime-client"
+import { MATCH_EVENT_NAMES } from "../constants"
+import { matchLiveEventSchema } from "../schemas/match-schema"
 
-export function useMatchLive(matchId: string) {
+const STALE_AFTER_MS = 40_000
+
+export function useMatchLive(id: string, enabled: boolean) {
   const queryClient = useQueryClient()
   const [status, setStatus] = useState<RealtimeStatus>("connecting")
 
   useEffect(() => {
-    const refresh = () => queryClient.invalidateQueries({ queryKey: ["match", matchId] })
+    if (!enabled) return
+    const key = ["match", id]
+    const refetch = () => void queryClient.invalidateQueries({ queryKey: key })
 
     return connectRealtime({
-      channel: { type: "match", id: matchId },
-      schema: matchEventSchema,
+      channel: { type: "match", id },
+      schema: matchLiveEventSchema,
       eventNames: MATCH_EVENT_NAMES,
-      staleAfterMs: 40_000,
-      onEvent: refresh,
-      onReconnect: refresh,
+      staleAfterMs: STALE_AFTER_MS,
+      onEvent: ({ match }) => (match ? queryClient.setQueryData(key, match) : refetch()),
+      onReconnect: refetch,
+      onError: (error) => error.code === "invalid_event" && refetch(),
       onStatus: setStatus,
     })
-  }, [matchId, queryClient])
+  }, [id, enabled, queryClient])
 
-  return { status }
+  return enabled ? status : "closed"
 }
 ```
+
+Pontos do exemplo: `enabled` evita conectar quando a partida não está em andamento; o snapshot
+`match` do evento é gravado direto no cache (`setQueryData`), com `invalidateQueries` como
+alternativa quando vem `null`; `invalid_event` força um `GET` para ressincronizar.
 
 Regras:
 
 - O significado do evento pertence à feature. O cliente não conhece telas nem regras de partida.
-- Liste todos os tipos em `eventNames`, de preferência em `features/<feature>/constants`.
+- Listar todos os tipos em `eventNames`, em `features/<feature>/constants` (`MATCH_EVENT_NAMES`).
 - Como o payload traz o snapshot da partida, a feature pode gravar `match` direto no cache em vez
-  de só invalidar. Essa regra fica em `features/<feature>/services`, não no hook.
+  de só invalidar. Regra complexa fica em `utils`/`services` da feature, não no hook.
+- Canal `season` com eventos de muitas partidas: agrupar a invalidação com atraso curto
+  (`use-matches-live.ts`: debounce de 500ms, `schema: z.unknown()` pois o payload é ignorado).
 - Reconcilie sempre em `onReconnect`: eventos perdidos nunca são reenviados.
 - Os callbacks são fixados na conexão. Quando uma dependência muda, o `useEffect` desconecta e
   conecta de novo.

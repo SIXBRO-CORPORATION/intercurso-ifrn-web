@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { getGenderRequirements, getTeamSizeLabel } from "./modality-rules"
+import { getGenderRequirements, getTeamSizeLabel, isGenderCompatible } from "./modality-rules"
 
 describe("getTeamSizeLabel", () => {
   it("mostra faixa quando mínimo e máximo diferem", () => {
@@ -26,5 +26,20 @@ describe("getGenderRequirements", () => {
 
   it("ignora mínimos nulos ou zerados", () => {
     expect(getGenderRequirements({ gender_mode: "MIXED", min_male_members: 0, min_female_members: null })).toEqual([])
+  })
+})
+
+describe("isGenderCompatible", () => {
+  it("modalidade mista aceita qualquer gênero", () => {
+    expect(isGenderCompatible("MIXED", "FEMALE")).toBe(true)
+  })
+
+  it("modalidade masculina/feminina exige o mesmo gênero", () => {
+    expect(isGenderCompatible("MALE", "MALE")).toBe(true)
+    expect(isGenderCompatible("FEMALE", "MALE")).toBe(false)
+  })
+
+  it("gênero desconhecido não bloqueia (o backend decide)", () => {
+    expect(isGenderCompatible("FEMALE", null)).toBe(true)
   })
 })

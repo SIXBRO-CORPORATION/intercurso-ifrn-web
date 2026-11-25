@@ -29,7 +29,7 @@ export function ConsoleRoster({ team, players, cards, onSelect }: Props) {
         <ul className="space-y-1 p-2">
           {players.map((p) => {
             const card = cards.get(p.user_id)
-            const expelled = Boolean(card?.red)
+            const expelled = Boolean(card?.expelled)
             return (
               <li key={p.user_id}>
                 <button

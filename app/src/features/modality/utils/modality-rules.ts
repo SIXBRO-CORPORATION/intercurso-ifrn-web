@@ -28,3 +28,7 @@ export function getGenderRequirements({ gender_mode, min_male_members, min_femal
   }
   return requirements
 }
+
+export function isGenderCompatible(mode: GenderMode, gender: "MALE" | "FEMALE" | null | undefined) {
+  return mode === "MIXED" || !gender || mode === gender
+}

@@ -8,7 +8,7 @@ import { useMatchAction } from "../../hooks/use-match-action"
 import type { MatchDetail } from "../../types/match"
 import { parseMatchActionError } from "../../utils/match-action-error"
 import { matchWinner, setSuggestion } from "../../utils/match-sets"
-import { ResultBox } from "./finish-match"
+import { ResultBox } from "./result-dialog"
 
 export function SetPrompt({ match }: { match: MatchDetail }) {
   const end = useMatchAction(match.match_id)

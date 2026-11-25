@@ -58,6 +58,15 @@ const matchEventSchema = z.object({
   clock_seconds: z.number(),
   team_id: z.string().nullish(),
   player_id: z.string().nullish(),
+  created_at: z.string().nullish(),
+})
+
+const correctionAlertSchema = z.object({
+  previous_score: z.string().nullish(),
+  corrected_score: z.string().nullish(),
+  current_status: z.string().nullish(),
+  required_actions: z.array(z.string()).nullish(),
+  note: z.string().nullish(),
 })
 
 const modalityConfigurationSchema = z.object({
@@ -68,11 +77,14 @@ const modalityConfigurationSchema = z.object({
 })
 
 export const matchDetailSchema = matchSchema.extend({
+  penalty_shootout_active: z.boolean().default(false),
   modality_configuration: modalityConfigurationSchema.nullish(),
   sets: z.array(matchSetSchema),
   team1_players: z.array(matchPlayerSchema),
   team2_players: z.array(matchPlayerSchema),
   timeline: z.array(matchEventSchema),
+  reactivated_player_id: z.string().nullish(),
+  correction_alert: correctionAlertSchema.nullish(),
 })
 
 export const matchDetailResponseSchema = envelopeSchema(matchDetailSchema)

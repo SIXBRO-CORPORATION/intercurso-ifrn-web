@@ -38,7 +38,7 @@ Ao mudar `next.config.ts`, rode o `restart web` acima.
 
 ## Usando WSL
 
-Mantenha o clone do repositório dentro do filesystem do WSL (`~/...`), não em `/mnt/c/...`. Fora dele o hot reload não funciona. No Docker Desktop, habilite a sua distro em Settings → Resources → WSL Integration.
+Manter o clone do repositório dentro do filesystem do WSL (`~/...`), não em `/mnt/c/...`. Fora dele o hot reload não funciona. No Docker Desktop, habilitar a distro em Settings → Resources → WSL Integration.
 
 ## Branches
 
@@ -46,3 +46,18 @@ Mantenha o clone do repositório dentro do filesystem do WSL (`~/...`), não em 
 - `main`: produção (deploy pela Vercel).
 
 Todo PR para `develop` ou `main` roda lint, typecheck, testes e build no GitHub Actions.
+
+## Documentação técnica
+
+Convenções, arquitetura, rotas, autenticação, realtime e UI estão em `docs/`; o índice por tarefa
+fica em `AGENTS.md`.
+
+| Documento | Assunto |
+| --- | --- |
+| `docs/ROUTING.md` | registro de rotas, `href`, `proxy.ts`, acesso por papel |
+| `docs/AUTH.md` | login SUAP, sessão, refresh, guards |
+| `docs/ARCHITECTURE.md` | camadas, features, fluxo de dados |
+| `docs/CONVENTIONS.md` | nomenclatura, idioma, testes, commits |
+| `docs/REALTIME.md` | SSE e eventos ao vivo |
+| `docs/SHADCN_UI.md` | tokens, componentes, referências visuais |
+| `docs/stack.md` | bibliotecas e variáveis de ambiente |

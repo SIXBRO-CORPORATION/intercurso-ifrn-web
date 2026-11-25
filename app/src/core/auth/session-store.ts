@@ -6,6 +6,7 @@ export type SessionUser = {
   matricula: string
   role: string
   atleta: boolean
+  gender: "MALE" | "FEMALE" | null
 }
 
 export type SessionStatus = "loading" | "authenticated" | "anonymous"

@@ -1,88 +1,84 @@
-# Stack Tecnológica — Intercurso IFRN Web
+# Stack
 
-Este documento lista as bibliotecas escolhidas para o projeto, o motivo da escolha e onde cada uma se encaixa na arquitetura (ver `ARCHITECTURE.md`).
+Bibliotecas efetivamente instaladas (`app/package.json`) e onde cada uma é usada. Biblioteca nova só
+entra com necessidade clara e deve ser registrada aqui.
 
-## Base
+## Resumo
 
-| Tecnologia | Função |
-|---|---|
-| **Next.js** | Framework React, roteamento via file-based routing |
-| **TypeScript** | Tipagem estática |
+| Biblioteca | Versão | Função | Onde |
+| --- | --- | --- | --- |
+| Next.js | 16.2 | framework, App Router, `proxy.ts` | `app/app/`, `app/proxy.ts` |
+| React | 19.2 | UI | tudo |
+| TypeScript | 5 (`strict`) | tipagem | tudo |
+| Tailwind CSS | 4 | estilo por tokens em CSS | `app/app/globals.css` |
+| shadcn + `radix-ui` | CLI 4 | primitivos de UI | `src/shared/components/ui/` |
+| class-variance-authority | 0.7 | variantes de componente | `ui/` |
+| `cn`, clsx, tailwind-merge | — | merge de classes (`cn` via `@/lib/utils`) | UI |
+| tw-animate-css | — | animações dos primitivos | `globals.css` |
+| lucide-react | 1.x | ícones | UI |
+| axios | 1.x | HTTP | `src/lib/axios.ts`, `repositories/` |
+| @tanstack/react-query | 5 | cache e estado de servidor | `hooks/` das features, `lib/query-provider.tsx` |
+| zod | 4 | validação de API e formulários | `schemas/` |
+| react-hook-form + @hookform/resolvers | 7 / 6 | formulários | `components/` das features |
+| date-fns | 4 | datas | utils |
+| react-day-picker | 10 | calendário | `ui/calendar`, `ui/date-picker` |
+| Vitest | 3 | testes | `*.test.ts(x)` |
+| Testing Library (`react`, `dom`, `user-event`) | — | testes de componente | `*.test.tsx` |
+| jsdom | 26 | ambiente DOM dos testes | projeto `components` |
+| ESLint (`eslint-config-next`) | 9 | lint | `eslint.config.mjs` |
+| Husky + lint-staged | — | pré-commit | `.husky/`, `package.json` |
 
-## Requisições HTTP e cache
+Não instalados (não presumir existência): MSW, Playwright, Redux/Zustand, Jest.
 
-### axios
-Cliente HTTP usado para todas as chamadas à API. Configuração centralizada (instância, interceptors de erro/token) fica em `src/lib/`, o uso efetivo para comunicação externa fica em `src/infrastructure/`.
+## Uso por tema
 
-### react-query (TanStack Query)
-Gerencia cache, loading, revalidação e sincronização de dados assíncronos vindos da API. Evita a necessidade de estado global manual para dados de servidor (ex: Redux) — resolve cache, refetch automático, invalidação e deduplicação de requisições.
+### HTTP — axios
 
-**Onde usar:** hooks de features (`src/features/*/hooks`) ou `src/shared/hooks`, encapsulando chamadas do `axios`/`src/infrastructure`.
+- `api` (`@/lib/axios`): `baseURL` de `NEXT_PUBLIC_API_URL`, Bearer automático e renovação em 401.
+  Usada **somente** em `repositories/` e no cliente realtime.
+- `authHttp`: cookies + `validateStatus: () => true`; exclusiva de `features/auth/services`.
+- `/api/*` é reescrito para o backend em `next.config.ts` (`NEXT_API_URL`, padrão
+  `http://localhost:8000`; no Docker, `http://api:8000`).
 
-## Validação
+### Cache — TanStack Query
 
-### zod
-Biblioteca de validação e definição de schemas com inferência de tipos TypeScript. Usada para:
-- Validar dados vindos da API antes de consumir
-- Validar formulários (junto com `react-hook-form`)
-- Validar variáveis de ambiente
+Estado de servidor vive no cache; não duplicar em `useState`/Context. Padrões globais:
+`retry: false`, `staleTime: 30_000`, `refetchOnWindowFocus: false`. Chaves de query definidas nos
+hooks da feature. Ver `ARCHITECTURE.md`.
 
-**Onde usar:** `src/shared/schemas/`.
+### Validação — Zod 4
 
-## Formulários
+- Toda resposta da API passa por `schema.parse` no repositório.
+- Envelope padrão: `envelopeSchema(data)` (`@/shared/schemas/envelope-schema`).
+- Formulários: schema em `schemas/` da feature com `react-hook-form` + `zodResolver`
+  (ex.: `match-filters-schema.ts`).
+- Tipos de domínio derivam do schema (`z.infer`).
 
-### react-hook-form
-Gerenciamento de formulários com alta performance (evita re-render em cada tecla) e baixo boilerplate. Integrado ao Zod via `@hookform/resolvers/zod`, reaproveitando os mesmos schemas de validação.
+### Datas
 
-**Onde usar:** dentro de cada feature (`src/features/*/components`), com schemas vindos de `src/shared/schemas`.
+`date-fns` para formatação; helpers de ISO em `src/lib/iso-date.ts`. Evitar `moment`/`dayjs`.
 
-## Datas
+### Realtime
 
-### date-fns
-Manipulação e formatação de datas de forma modular (importa só as funções usadas, ao invés de uma lib monolítica como moment.js).
+Sem biblioteca: `EventSource` nativo encapsulado em `infrastructure/realtime`. Ver `REALTIME.md`.
 
-**Onde usar:** `src/shared/utils/` para helpers de formatação reutilizados entre features.
+### Testes — Vitest
 
-## Ícones
+Config em `app/vitest.config.ts` (a `vitest.config.mts` é redundante e não é usada). Projetos `unit`
+(node, `src/**/*.test.ts`) e `components` (jsdom, `src/**/*.test.tsx`, setup em `src/tests/setup.ts`).
+Convenções em `CONVENTIONS.md`.
 
-### lucide-icons (lucide-react)
-Biblioteca de ícones SVG, leve e com boa cobertura. Padrão usado também pelo shadcn/ui, caso essa lib de componentes seja adotada futuramente.
+### Next.js 16
 
-**Onde usar:** diretamente em `src/shared/components/` e nos componentes de `src/features/`.
+Diferenças relevantes frente a versões anteriores: `proxy.ts` substitui `middleware.ts`; `params` e
+`searchParams` são `Promise`. Documentação do framework instalado em
+`app/node_modules/next/dist/docs/` — prevalece sobre conhecimento prévio.
 
-## Testes
+## Variáveis de ambiente
 
-### Vitest
-Test runner para testes unitários e de integração. Substituto mais rápido do Jest, com boa integração nativa ao ecossistema Vite/Next.
+| Variável | Onde | Função |
+| --- | --- | --- |
+| `NEXT_API_URL` | `next.config.ts` (servidor) | destino do rewrite de `/api/*` |
+| `NEXT_PUBLIC_API_URL` | `src/lib/axios.ts` (cliente) | `baseURL` do axios |
 
-**Onde usar:** colocalizado com o código (`Componente.test.tsx` ao lado de `Componente.tsx`) ou em `tests/` para testes que não são colocalizados (ex: testes de integração cross-feature).
-
-### Playwright
-Testes end-to-end (e2e), simulando interação real do usuário no navegador.
-
-**Onde usar:** `tests/e2e/`.
-
-### MSW (Mock Service Worker)
-Intercepta requisições HTTP (axios/fetch) e devolve respostas mockadas, tanto em testes quanto em desenvolvimento local. Permite testar componentes que dependem de API sem precisar de backend real rodando.
-
-**Onde usar:**
-- `tests/mocks/handlers.ts` — definição dos mocks de rota
-- `tests/mocks/server.ts` — setup do servidor mock (Node, para Vitest)
-- `tests/mocks/browser.ts` — setup do worker mock (browser, para Playwright/dev)
-
-**Fluxo de testes:**
-```
-Vitest (unitário/integração) → MSW (Node) → simula resposta da API
-Playwright (e2e)             → MSW (browser) → simula resposta da API
-```
-
-## Resumo por camada da arquitetura
-
-| Camada | Libs relacionadas |
-|---|---|
-| `src/infrastructure/` | axios, react-query (chamadas reais à API) |
-| `lib/` | configuração do axios (instância), configuração do QueryClient |
-| `src/shared/schemas/` | zod |
-| `src/shared/utils/` | date-fns |
-| `features/*/components` | react-hook-form, lucide-react |
-| `tests/` | vitest, playwright, msw |
+Não ler `process.env` fora desses pontos; configuração de ambiente nova vai para `src/config/`.
