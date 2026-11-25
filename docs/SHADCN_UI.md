@@ -11,7 +11,7 @@ Regras para criar e estilizar componentes. Estrutura de pastas em `ARCHITECTURE.
 - Primitivos shadcn ficam em `src/shared/components/ui/` e são código do projeto (editáveis). Não
   recebem entidades de domínio.
 - `cn` (merge de classes) vem de `@/lib/utils`.
-- Referência visual das telas: `docs/visual-guidelines/` (PNGs).
+- Referência visual das telas: <https://claude.ai/artifact/BGjB6wgKdurEECsmVbVmPw#web>.
 
 ## Estado do shadcn neste projeto
 
@@ -139,13 +139,5 @@ npx shadcn@latest add <componente>
 
 ## Referência visual
 
-`docs/visual-guidelines/` contém imagens de referência (não são código):
-
-| Pasta | Conteúdo |
-| --- | --- |
-| `00_design-system` | fundamentos, componentes, padrões, ícones e responsivo |
-| `01_site-publico-e-aluno` | telas `W01`–`W13` (login, jogos, partida ao vivo, chaves, equipes, convite, perfil) |
-| `02_painel-monitor` | telas `M01`–`M17` (painel, temporada, modalidades, equipes, chaveamento, console da partida) |
-| `03_visao-geral` | mapas gerais das duas áreas |
-
-Consultar a imagem correspondente (`Read` em PNG) somente ao implementar ou ajustar aquela tela.
+O design vigente é o protótipo navegável em <https://claude.ai/artifact/BGjB6wgKdurEECsmVbVmPw#web> (não é código do projeto).
+Consultar somente a tela que está sendo implementada ou ajustada.
